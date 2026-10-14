@@ -62,7 +62,7 @@ export const films: Film[] = [
   {
     slug: "pumpkin-boys-daydream",
     title: "Pumpkin Boy's Daydream",
-    release: { kind: "year", year: 2026 },
+    release: { kind: "date", date: "2026-09-26" },
     posterUrl: `${import.meta.env.BASE_URL}films/pumpkin-boys-daydream.png`,
     description: "Coming soon.",
   },
