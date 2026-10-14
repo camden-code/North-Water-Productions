@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react"
 import { FilmCard } from "@/components/film-card"
+import { FloatingQuotes } from "@/components/floating-quotes"
 import { films } from "@/lib/films"
 
 export function HomePage() {
@@ -16,6 +17,7 @@ export function HomePage() {
 
   return (
     <section className="mx-auto w-full max-w-6xl py-12">
+      <FloatingQuotes />
       <div className="mb-10 text-center">
         <h1 className="text-4xl font-bold tracking-tight sm:text-5xl">Northwater Pictures</h1>
         <p className="mt-2 text-xl text-muted-foreground">Films by Xavier Gamache</p>
