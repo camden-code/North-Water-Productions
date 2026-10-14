@@ -1,3 +1,4 @@
+import { Fragment } from "react"
 import { TeamMemberProfile } from "@/components/team-member-profile"
 import { team } from "@/lib/team"
 
@@ -14,8 +15,11 @@ export function AboutPage() {
       </div>
       <div className="space-y-10">
         <h2 className="text-3xl font-bold">The Team</h2>
-        {team.map((member) => (
-          <TeamMemberProfile key={member.name} member={member} />
+        {team.map((member, index) => (
+          <Fragment key={member.name}>
+            {index > 0 && <hr className="sm:hidden" />}
+            <TeamMemberProfile member={member} />
+          </Fragment>
         ))}
       </div>
     </section>

@@ -17,7 +17,7 @@ function initials(name: string): string {
 export function TeamMemberProfile({ member }: TeamMemberProfileProps) {
   return (
     <article className="flex flex-col gap-6 sm:flex-row sm:items-start">
-      <div className="w-40 shrink-0 self-center sm:self-start">
+      <div className="hidden w-40 shrink-0 sm:block sm:self-start">
         <div className="aspect-square overflow-hidden rounded-xl bg-muted">
           {member.photoUrl ? (
             <img src={member.photoUrl} alt={member.name} className="size-full object-cover" />
