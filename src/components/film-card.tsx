@@ -1,6 +1,7 @@
 import { useRef, useState, type PointerEvent } from "react"
 import { flushSync } from "react-dom"
-import { ExternalLink, Film as FilmIcon, Music, Play, X } from "lucide-react"
+import { Film as FilmIcon, Music, Play, X } from "lucide-react"
+import { ProfileLinkIcon } from "@/components/profile-link-icon"
 import { formatRelease, type Film } from "@/lib/films"
 import { cn } from "@/lib/utils"
 
@@ -140,7 +141,7 @@ export function FilmCard({ film, flipped, onFlip, onUnflip }: FilmCardProps) {
           <footer className="mt-4 flex flex-wrap gap-4 border-t pt-4">
             {film.letterboxdUrl && (
               <a href={film.letterboxdUrl} target="_blank" rel="noreferrer" className={linkClass}>
-                <ExternalLink aria-hidden className="size-4" />
+                <ProfileLinkIcon label="Letterboxd" className="size-4" />
                 Letterboxd
               </a>
             )}
