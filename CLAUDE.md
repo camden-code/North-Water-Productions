@@ -25,4 +25,4 @@ Static landing page for Northwater Pictures. React + TypeScript + Vite + Tailwin
 
 ## Verify
 
-`npm run build` must pass (runs `tsc -b` then `vite build`).
+Do not run builds to verify changes; the user verifies manually. Only run `npm run build` (`tsc -b` then `vite build`) when asked.
