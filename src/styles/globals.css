@@ -63,6 +63,11 @@
   --accent-800: 29.54% 0.065 260.75;
   --accent-900: 20.04% 0.037 260.52;
   --accent-950: 14.81% 0.020 257.28;
+
+  --neutral-100: 96.5% 0 0;
+  --neutral-200: 92.5% 0 0;
+  --neutral-300: 86% 0 0;
+  --neutral-400: 78% 0 0;
 }
 
 .dark {
@@ -125,6 +130,11 @@
   --accent-800: 81.99% 0.051 261.49;
   --accent-900: 91.03% 0.026 261.14;
   --accent-950: 95.67% 0.012 259.82;
+
+  --neutral-100: 24% 0 0;
+  --neutral-200: 30% 0 0;
+  --neutral-300: 38% 0 0;
+  --neutral-400: 48% 0 0;
 }
 
 /* Redeclared under .dark so the semantic tokens resolve against the dark palette. */
@@ -170,6 +180,27 @@
 
   --font-weight-normal: 400;
   --font-weight-bold: 700;
+
+  --animate-collapsible-down: collapsible-down 200ms ease-out;
+  --animate-collapsible-up: collapsible-up 200ms ease-out;
+
+  @keyframes collapsible-down {
+    from {
+      height: 0;
+    }
+    to {
+      height: var(--radix-collapsible-content-height);
+    }
+  }
+
+  @keyframes collapsible-up {
+    from {
+      height: var(--radix-collapsible-content-height);
+    }
+    to {
+      height: 0;
+    }
+  }
 }
 
 @theme inline {
@@ -251,6 +282,10 @@
   --color-accent-800: oklch(var(--accent-800));
   --color-accent-900: oklch(var(--accent-900));
   --color-accent-950: oklch(var(--accent-950));
+  --color-neutral-100: oklch(var(--neutral-100));
+  --color-neutral-200: oklch(var(--neutral-200));
+  --color-neutral-300: oklch(var(--neutral-300));
+  --color-neutral-400: oklch(var(--neutral-400));
 }
 
 @layer base {
