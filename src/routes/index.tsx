@@ -1,4 +1,4 @@
-import { createBrowserRouter, Outlet } from "react-router"
+import { createBrowserRouter, Outlet, ScrollRestoration } from "react-router"
 import { SiteHeader } from "@/components/site-header"
 import { AboutPage } from "@/routes/about"
 import { ContactPage } from "@/routes/contact"
@@ -27,6 +27,7 @@ function NorthwaterPictures() {
       <main className="flex flex-1 flex-col px-6">
         <Outlet />
       </main>
+      <ScrollRestoration />
     </div>
   )
 }
