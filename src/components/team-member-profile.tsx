@@ -1,4 +1,4 @@
-import { ExternalLink } from "lucide-react"
+import { ProfileLinkIcon } from "@/components/profile-link-icon"
 import type { TeamMember } from "@/lib/team"
 
 type TeamMemberProfileProps = {
@@ -46,7 +46,7 @@ export function TeamMemberProfile({ member }: TeamMemberProfileProps) {
                 rel="noreferrer"
                 className="inline-flex items-center gap-1.5 text-primary underline-offset-4 hover:underline"
               >
-                <ExternalLink aria-hidden className="size-4" />
+                <ProfileLinkIcon label={link.label} className="size-4" />
                 {link.label}
               </a>
             </li>
