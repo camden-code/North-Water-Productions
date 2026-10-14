@@ -27,6 +27,7 @@ export function HomePage() {
             film={film}
             flipped={flippedSlug === film.slug}
             onFlip={() => setFlippedSlug(film.slug)}
+            onUnflip={() => setFlippedSlug(null)}
           />
         ))}
       </div>
