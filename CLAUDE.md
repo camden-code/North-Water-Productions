@@ -6,7 +6,7 @@ Static landing page for North Water Pictures. React + TypeScript + Vite + Tailwi
 
 - Static only: no backend, database, persistence, or data processing.
 - Keep dependencies minimal. Justify any new dependency before adding it.
-- Vite `base` is `/North-Water-Productions/`; use router `Link`s or `import.meta.env.BASE_URL` for paths, never hard-coded absolute URLs.
+- Vite `base` is `/` (served from the custom domain northwaterpictures.com); use router `Link`s or `import.meta.env.BASE_URL` for paths, never hard-coded absolute URLs.
 
 ## Structure
 
