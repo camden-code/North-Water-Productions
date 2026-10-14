@@ -1,4 +1,7 @@
+import { useState } from "react"
 import { Link, NavLink } from "react-router"
+import { Menu, X } from "lucide-react"
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible"
 import { cn } from "@/lib/utils"
 
 type NavItem = {
@@ -7,31 +10,63 @@ type NavItem = {
 }
 
 const navItems: NavItem[] = [
-  { to: "/about", label: "About Us" },
+  { to: "/about", label: "About Us" },
   { to: "/contact", label: "Contact" },
 ]
 
 export function SiteHeader() {
+  const [open, setOpen] = useState(false)
+
   return (
-    <header className="border-b">
-      <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
-        <Link to="/" className="font-heading text-xl font-bold tracking-tight">
-          North Water Pictures
-        </Link>
-        <nav className="flex items-center gap-6">
-          {navItems.map((item) => (
-            <NavLink
-              key={item.to}
-              to={item.to}
-              className={({ isActive }) =>
-                cn("text-base transition-colors hover:text-foreground", isActive ? "text-foreground" : "text-muted-foreground")
-              }
+    <header className="sticky top-0 z-50 border-b border-neutral-400 bg-background/80 backdrop-blur">
+      <Collapsible open={open} onOpenChange={setOpen}>
+        <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-6 py-4">
+          <Link to="/" onClick={() => setOpen(false)} className="font-heading text-xl font-bold tracking-tight whitespace-nowrap">
+            Northwater Pictures
+          </Link>
+          <nav className="hidden items-center gap-6 sm:flex">
+            {navItems.map((item) => (
+              <NavLink
+                key={item.to}
+                to={item.to}
+                className={({ isActive }) =>
+                  cn("text-base transition-colors hover:text-foreground", isActive ? "text-foreground" : "text-muted-foreground")
+                }
+              >
+                {item.label}
+              </NavLink>
+            ))}
+          </nav>
+          <CollapsibleTrigger asChild>
+            <button
+              type="button"
+              aria-label={open ? "Close menu" : "Open menu"}
+              className="-mr-2 inline-flex size-12 cursor-pointer items-center justify-center rounded-md hover:bg-muted focus-visible:outline-2 focus-visible:outline-offset-2 sm:hidden"
             >
-              {item.label}
-            </NavLink>
-          ))}
-        </nav>
-      </div>
+              {open ? <X aria-hidden className="size-7" /> : <Menu aria-hidden className="size-7" />}
+            </button>
+          </CollapsibleTrigger>
+        </div>
+        <CollapsibleContent className="overflow-hidden data-[state=closed]:animate-collapsible-up data-[state=open]:animate-collapsible-down motion-reduce:animate-none sm:hidden">
+          <nav className="flex flex-col border-t border-neutral-300 bg-neutral-950">
+            {navItems.map((item) => (
+              <NavLink
+                key={item.to}
+                to={item.to}
+                onClick={() => setOpen(false)}
+                className={({ isActive }) =>
+                  cn(
+                    "border-b border-neutral-300 px-6 py-4 text-xl text-foreground transition-colors last:border-b-0 hover:bg-neutral-800 active:bg-neutral-900",
+                    isActive && "font-semibold bg-neutral-900",
+                  )
+                }
+              >
+                {item.label}
+              </NavLink>
+            ))}
+          </nav>
+        </CollapsibleContent>
+      </Collapsible>
     </header>
   )
 }

@@ -96,14 +96,14 @@ export function FilmCard({ film, flipped, onFlip, onUnflip }: FilmCardProps) {
           onClick={onFlip}
           inert={flipped}
           aria-label={`${film.title}, ${release}. Show details`}
-          className="absolute inset-0 cursor-pointer overflow-hidden rounded-xl bg-muted shadow-sm backface-hidden focus-visible:outline-2 focus-visible:outline-offset-2"
+          className="absolute inset-0 cursor-pointer overflow-hidden rounded-xl bg-muted shadow-sm translate-z-px backface-hidden focus-visible:outline-2 focus-visible:outline-offset-2"
         >
           {film.posterUrl ? (
             <img
               src={film.posterUrl}
               alt=""
               loading="lazy"
-              className="size-full object-cover"
+              className="size-full object-cover backface-hidden"
             />
           ) : (
             <div className="flex size-full flex-col items-center justify-center gap-3 p-6 text-center text-muted-foreground">
@@ -122,7 +122,7 @@ export function FilmCard({ film, flipped, onFlip, onUnflip }: FilmCardProps) {
 
         <div
           inert={!flipped}
-          className="absolute inset-0 flex rotate-y-180 flex-col overflow-hidden rounded-xl border bg-card p-5 text-card-foreground shadow-sm backface-hidden"
+          className="absolute inset-0 flex -translate-z-px rotate-y-180 flex-col overflow-hidden rounded-xl border bg-card p-5 text-card-foreground shadow-sm backface-hidden"
         >
           <button
             type="button"

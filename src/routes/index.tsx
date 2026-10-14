@@ -8,7 +8,7 @@ import { NotFoundPage } from "@/routes/not-found"
 export const router = createBrowserRouter(
   [
     {
-      element: <NorthWaterProductions />,
+      element: <NorthwaterPictures />,
       children: [
         { index: true, element: <HomePage /> },
         { path: "about", element: <AboutPage /> },
@@ -20,7 +20,7 @@ export const router = createBrowserRouter(
   { basename: import.meta.env.BASE_URL },
 )
 
-function NorthWaterProductions() {
+function NorthwaterPictures() {
   return (
     <div className="flex min-h-svh flex-col">
       <SiteHeader />

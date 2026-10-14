@@ -16,8 +16,8 @@ function initials(name: string): string {
 
 export function TeamMemberProfile({ member }: TeamMemberProfileProps) {
   return (
-    <article className="flex flex-col gap-6 sm:flex-row sm:items-start">
-      <div className="w-40 shrink-0 self-center sm:self-start">
+    <article className="grid grid-cols-[5rem_1fr] gap-x-4 gap-y-4 sm:grid-cols-[10rem_1fr] sm:gap-x-6">
+      <div className="sm:row-span-2 sm:self-start">
         <div className="aspect-square overflow-hidden rounded-xl bg-muted">
           {member.photoUrl ? (
             <img src={member.photoUrl} alt={member.name} className="size-full object-cover" />
@@ -31,11 +31,11 @@ export function TeamMemberProfile({ member }: TeamMemberProfileProps) {
           )}
         </div>
       </div>
-      <div className="flex-1 space-y-3">
-        <div>
-          <h3 className="text-2xl font-bold">{member.name}</h3>
-          <p className="text-muted-foreground">{member.role}</p>
-        </div>
+      <div className="self-center sm:self-end">
+        <h3 className="text-xl font-bold sm:text-2xl">{member.name}</h3>
+        <p className="text-muted-foreground">{member.role}</p>
+      </div>
+      <div className="col-span-2 space-y-3 sm:col-span-1">
         <p>{member.bio}</p>
         <ul className="flex flex-wrap gap-4">
           {member.links.map((link) => (
