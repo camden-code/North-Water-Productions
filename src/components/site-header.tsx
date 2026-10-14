@@ -16,7 +16,7 @@ export function SiteHeader() {
     <header className="border-b">
       <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
         <Link to="/" className="font-heading text-xl font-bold tracking-tight">
-          North Water Pictures
+          Northwater Pictures
         </Link>
         <nav className="flex items-center gap-6">
           {navItems.map((item) => (

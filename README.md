@@ -1,6 +1,6 @@
-# North Water Pictures
+# Northwater Pictures
 
-Landing page for North Water Pictures, a Maine based short film production company. Built with React, TypeScript, Vite, Tailwind CSS and shadcn/ui, and hosted on GitHub Pages.
+Landing page for Northwater Pictures, a Maine based short film production company. Built with React, TypeScript, Vite, Tailwind CSS and shadcn/ui, and hosted on GitHub Pages.
 
 ## Run locally
 

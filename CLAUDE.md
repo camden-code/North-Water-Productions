@@ -1,6 +1,6 @@
 # CLAUDE.md
 
-Static landing page for North Water Pictures. React + TypeScript + Vite + Tailwind v4 + shadcn/ui, deployed to GitHub Pages.
+Static landing page for Northwater Pictures. React + TypeScript + Vite + Tailwind v4 + shadcn/ui, deployed to GitHub Pages.
 
 ## Constraints
 
