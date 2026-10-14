@@ -76,7 +76,7 @@ export const films: Film[] = [
 ]
 
 export function formatRelease(release: FilmRelease): string {
-  if (release.kind === "upcoming") return "Coming soon"
+  if (release.kind === "upcoming") return "Releasing 2026"
   if (release.kind === "year") return String(release.year)
   // Parse as UTC so the date doesn't shift with the viewer's timezone.
   return new Date(`${release.date}T00:00:00Z`).toLocaleDateString("en-US", {
