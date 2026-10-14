@@ -145,6 +145,12 @@ export function FilmCard({ film, flipped, onFlip, onUnflip }: FilmCardProps) {
                 Letterboxd
               </a>
             )}
+            {film.watchUrl && (
+              <a href={film.watchUrl} target="_blank" rel="noreferrer" className={linkClass}>
+                <Play aria-hidden className="size-4" />
+                Watch
+              </a>
+            )}
             {film.trailerUrl && (
               <a href={film.trailerUrl} target="_blank" rel="noreferrer" className={linkClass}>
                 <Play aria-hidden className="size-4" />
