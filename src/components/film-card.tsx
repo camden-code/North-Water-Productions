@@ -53,7 +53,7 @@ export function FilmCard({ film, flipped, onFlip }: FilmCardProps) {
           onClick={onFlip}
           inert={flipped}
           aria-label={`${film.title}, ${release}. Show details`}
-          className="absolute inset-0 cursor-pointer overflow-hidden rounded-xl border bg-muted shadow-sm backface-hidden focus-visible:outline-2 focus-visible:outline-offset-2"
+          className="absolute inset-0 cursor-pointer overflow-hidden rounded-xl bg-muted shadow-sm backface-hidden focus-visible:outline-2 focus-visible:outline-offset-2"
         >
           {film.posterUrl ? (
             <img
