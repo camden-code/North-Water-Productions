@@ -14,6 +14,7 @@ export type Film = {
   quote?: FilmQuote
   letterboxdUrl?: string
   trailerUrl?: string
+  soundtrackUrl?: string
 }
 
 export const films: Film[] = [
@@ -34,6 +35,7 @@ export const films: Film[] = [
     quote: { text: "…a well-paced action film with a clear artistic thesis that positions Gamache as a local filmmaker to watch.", author: "The Maine Playweek" },
     letterboxdUrl: "https://letterboxd.com/film/death-of-a-tiny-hat-man/",
     trailerUrl: "https://www.youtube.com/watch?v=cmzYujAWQmM",
+    soundtrackUrl: "https://www.youtube.com/watch?v=Wr-0mH197Pw&list=OLAK5uy_nuxNkBy5nYZ6eNdQyEvwBDDyAJVikMC9I",
   },
   {
     slug: "feel-good-hotline",
