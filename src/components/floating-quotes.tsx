@@ -1,5 +1,5 @@
-import { useEffect, useMemo, useRef } from "react"
-import { quotes } from "@/lib/quotes"
+import { useEffect, useMemo, useRef } from "react";
+import { quotes } from "@/lib/quotes";
 
 type FloatingItem =
   | { kind: "quote"; text: string; author: string }
@@ -75,9 +75,9 @@ export function FloatingQuotes() {
         const { offsets, heights, loop, tallest } = layout[side]
         elements.current[side].forEach((element, index) => {
           if (!element) return
-          const y = wrap(offsets[index] - elapsed * DRIFT_PX_PER_SECOND + tallest, loop) - tallest
+          const y = wrap(offsets[index]! - elapsed * DRIFT_PX_PER_SECOND + tallest, loop) - tallest
           const top = (y - HEADER_HEIGHT) / HEADER_FADE
-          const bottom = (viewport - y - heights[index]) / EDGE_FADE
+          const bottom = (viewport - y - heights[index]!) / EDGE_FADE
           const edge = Math.min(1, Math.max(0, Math.min(top, bottom)))
           const intro = Math.min(1, Math.max(0, (revealFront - y) / INTRO_SOFTNESS))
           element.style.transform = `translate3d(0, ${y}px, 0)`
