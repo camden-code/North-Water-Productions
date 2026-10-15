@@ -1,18 +1,71 @@
-import { Fragment } from "react"
-import { PhotoCollage } from "@/components/photo-collage"
+import { Fragment, useEffect, useRef, useState } from "react"
+import { Images, X } from "lucide-react"
+import { PhotoCollage, type PhotoPlacement } from "@/components/photo-collage"
+import { PhotoLightbox } from "@/components/photo-lightbox"
 import { TeamMemberProfile } from "@/components/team-member-profile"
+import { btsPhotos } from "@/lib/bts-photos"
 import { team } from "@/lib/team"
+import { cn } from "@/lib/utils"
 import { ExternalLink } from "../components/external-link"
 
+type ViewerState = {
+  index: number
+  origin: PhotoPlacement
+}
+
+const pillButtonClassName =
+  "inline-flex cursor-pointer items-center gap-2 rounded-full border border-neutral-400 bg-background/80 px-6 py-3 text-lg backdrop-blur transition-colors hover:bg-muted focus-visible:outline-2 focus-visible:outline-offset-2"
+
 export function AboutPage() {
+  const [gallery, setGallery] = useState(false)
+  const [viewer, setViewer] = useState<ViewerState | null>(null)
+  const openButtonRef = useRef<HTMLButtonElement>(null)
+  const wasGallery = useRef(false)
+
+  useEffect(() => {
+    if (wasGallery.current && !gallery) openButtonRef.current?.focus({ preventScroll: true })
+    wasGallery.current = gallery
+  }, [gallery])
+
+  useEffect(() => {
+    if (!gallery || viewer) return
+    const keydown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setGallery(false)
+    }
+    window.addEventListener("keydown", keydown)
+    return () => window.removeEventListener("keydown", keydown)
+  }, [gallery, viewer])
+
   return (
     <>
-      <PhotoCollage />
+      {/* Raised above the page content only once it has faded out, so photos can be clicked in the gallery. */}
       <div
-        aria-hidden="true"
-        className="pointer-events-none fixed inset-0 -z-10 bg-background/75 lg:inset-x-auto lg:left-1/2 lg:w-[calc(var(--container-4xl)+8rem)] lg:-translate-x-1/2 lg:fade-x"
-      />
-      <section className="mx-auto w-full max-w-4xl space-y-14 py-12">
+        className={cn(
+          "fixed inset-0 transition-[z-index] duration-0",
+          gallery ? "z-10 delay-300" : "-z-10",
+        )}
+      >
+        <PhotoCollage
+          photos={btsPhotos}
+          mode={gallery ? "gallery" : "background"}
+          hiddenId={viewer ? btsPhotos[viewer.index]?.id : undefined}
+          onSelect={(index, origin) => setViewer({ index, origin })}
+        />
+        <div
+          aria-hidden="true"
+          className={cn(
+            "pointer-events-none absolute inset-0 bg-background/75 transition-opacity duration-700 lg:inset-x-auto lg:left-1/2 lg:w-[calc(var(--container-4xl)+8rem)] lg:-translate-x-1/2 lg:fade-x",
+            gallery && "opacity-0",
+          )}
+        />
+      </div>
+      <section
+        inert={gallery}
+        className={cn(
+          "mx-auto w-full max-w-4xl space-y-14 py-12 transition-[opacity,visibility] duration-300",
+          gallery && "invisible opacity-0",
+        )}
+      >
         <div className="space-y-4">
           <h1 className="text-4xl font-bold tracking-tight sm:text-5xl">About&nbsp;Us</h1>
           <p className="text-xl">
@@ -41,7 +94,30 @@ export function AboutPage() {
             </Fragment>
           ))}
         </div>
+        <div className="flex justify-center">
+          <button ref={openButtonRef} type="button" onClick={() => setGallery(true)} className={pillButtonClassName}>
+            <Images aria-hidden className="size-5" />
+            Behind the Scenes
+          </button>
+        </div>
       </section>
+      {gallery && (
+        <div className="fixed inset-x-0 bottom-6 z-20 flex justify-center motion-safe:animate-fade-in">
+          <button type="button" autoFocus onClick={() => setGallery(false)} className={pillButtonClassName}>
+            <X aria-hidden className="size-5" />
+            Back to About Us
+          </button>
+        </div>
+      )}
+      {viewer && (
+        <PhotoLightbox
+          photos={btsPhotos}
+          index={viewer.index}
+          origin={viewer.origin}
+          onNavigate={(index) => setViewer((current) => (current ? { ...current, index } : current))}
+          onClose={() => setViewer(null)}
+        />
+      )}
     </>
   )
 }

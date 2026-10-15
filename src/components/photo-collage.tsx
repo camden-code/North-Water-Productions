@@ -1,12 +1,19 @@
 import { useEffect, useMemo, useState, type CSSProperties } from "react"
+import type { BtsPhoto } from "@/lib/bts-photos"
+import { cn } from "@/lib/utils"
 
-type CollagePhoto = {
-  src: string
+export type CollageMode = "background" | "gallery"
+
+export type PhotoPlacement = {
+  centerX: number
+  centerY: number
   width: number
   height: number
+  rotation: number
 }
 
-type PlacedPhoto = CollagePhoto & {
+type PlacedPhoto = {
+  photo: BtsPhoto
   key: string
   left: number
   top: number
@@ -20,7 +27,13 @@ type CollageLayout = {
   height: number
 }
 
-const PHOTO_DIR = `${import.meta.env.BASE_URL}bts/`
+type PhotoCollageProps = {
+  photos: BtsPhoto[]
+  mode: CollageMode
+  hiddenId?: string
+  onSelect?: (index: number, placement: PhotoPlacement) => void
+}
+
 const TARGET_CELL_WIDTH = 280
 const MIN_COLUMNS = 2
 const CELL_ASPECT = 0.8
@@ -29,12 +42,6 @@ const JITTER = 0.4
 const MAX_ROTATION = 24
 const SKIP_CHANCE = 0.15
 const DRIFT_PX_PER_SECOND = 6
-
-function isCollagePhoto(value: unknown): value is CollagePhoto {
-  if (typeof value !== "object" || value === null) return false
-  const { src, width, height } = value as Record<string, unknown>
-  return typeof src === "string" && typeof width === "number" && typeof height === "number"
-}
 
 function seededRandom(seed: number): () => number {
   let state = seed
@@ -46,7 +53,7 @@ function seededRandom(seed: number): () => number {
   }
 }
 
-function buildLayout(photos: CollagePhoto[], viewportWidth: number, seed: number): CollageLayout {
+function buildLayout(photos: BtsPhoto[], viewportWidth: number, seed: number): CollageLayout {
   const random = seededRandom(seed)
   const shuffled = [...photos]
   for (let i = shuffled.length - 1; i > 0; i--) {
@@ -69,7 +76,8 @@ function buildLayout(photos: CollagePhoto[], viewportWidth: number, seed: number
     const column = cell % columns
     cell++
 
-    const aspect = photo.width / photo.height
+    const { width, height } = photo.thumbnail.bw
+    const aspect = width / height
     const area = (cellWidth * cellWidth * PHOTO_FILL) * (0.8 + random() * 0.4)
     const displayWidth = Math.sqrt(area * aspect)
     const displayHeight = Math.sqrt(area / aspect)
@@ -78,8 +86,8 @@ function buildLayout(photos: CollagePhoto[], viewportWidth: number, seed: number
     const centerY = (row + 0.5 + (random() - 0.5) * JITTER) * cellHeight
 
     placed.push({
-      ...photo,
-      key: `${index}-${photo.src}`,
+      photo,
+      key: `${index}-${photo.id}`,
       left: (centerX % viewportWidth) - displayWidth / 2,
       top: centerY - displayHeight / 2,
       displayWidth,
@@ -91,20 +99,47 @@ function buildLayout(photos: CollagePhoto[], viewportWidth: number, seed: number
   return { photos: placed, height: (cell / columns) * cellHeight }
 }
 
-export function PhotoCollage() {
-  const [photos, setPhotos] = useState<CollagePhoto[]>([])
+function placementOf(element: HTMLElement): PhotoPlacement {
+  // The bounding rect of a rotated element is its axis-aligned bounds, but its center is unaffected.
+  const rect = element.getBoundingClientRect()
+  return {
+    centerX: rect.left + rect.width / 2,
+    centerY: rect.top + rect.height / 2,
+    width: element.offsetWidth,
+    height: element.offsetHeight,
+    rotation: Number(element.dataset.rotation ?? 0),
+  }
+}
+
+/** Finds where a photo currently sits in the collage, preferring the copy closest to the middle of the screen. */
+export function findPhotoPlacement(id: string): PhotoPlacement | null {
+  const viewportCenterX = window.innerWidth / 2
+  const viewportCenterY = window.innerHeight / 2
+  let best: PhotoPlacement | null = null
+  let bestDistance = Infinity
+
+  for (const element of document.querySelectorAll<HTMLElement>("[data-collage-photo]")) {
+    if (element.dataset.collagePhoto !== id) continue
+    const rect = element.getBoundingClientRect()
+    const onScreen = rect.bottom > 0 && rect.top < window.innerHeight && rect.right > 0 && rect.left < window.innerWidth
+    if (!onScreen) continue
+
+    const placement = placementOf(element)
+    const distance = Math.hypot(placement.centerX - viewportCenterX, placement.centerY - viewportCenterY)
+    if (distance < bestDistance) {
+      best = placement
+      bestDistance = distance
+    }
+  }
+  return best
+}
+
+export function PhotoCollage({ photos, mode, hiddenId, onSelect }: PhotoCollageProps) {
   const [viewport, setViewport] = useState(() => ({ width: window.innerWidth, height: window.innerHeight }))
   const [seed] = useState(() => Math.floor(Math.random() * 2 ** 32))
   const [loaded, setLoaded] = useState<ReadonlySet<string>>(() => new Set())
-
-  useEffect(() => {
-    const controller = new AbortController()
-    fetch(`${PHOTO_DIR}manifest.json`, { signal: controller.signal })
-      .then((response) => (response.ok ? (response.json() as Promise<unknown>) : []))
-      .then((data) => setPhotos(Array.isArray(data) ? data.filter(isCollagePhoto) : []))
-      .catch(() => undefined)
-    return () => controller.abort()
-  }, [])
+  const [colorRequested, setColorRequested] = useState(false)
+  const gallery = mode === "gallery"
 
   useEffect(() => {
     // Only react to width changes so mobile toolbars showing/hiding don't restart the drift.
@@ -116,13 +151,24 @@ export function PhotoCollage() {
     return () => window.removeEventListener("resize", resize)
   }, [])
 
+  useEffect(() => {
+    if (gallery) setColorRequested(true)
+  }, [gallery])
+
   const layout = useMemo(() => buildLayout(photos, viewport.width, seed), [photos, viewport.width, seed])
+  const indexById = useMemo(() => new Map(photos.map((photo, index) => [photo.id, index])), [photos])
   const copies = Math.ceil(viewport.height / layout.height) + 1
 
   const markLoaded = (src: string) => setLoaded((current) => (current.has(src) ? current : new Set(current).add(src)))
 
   return (
-    <div aria-hidden="true" className="pointer-events-none fixed inset-0 -z-10 overflow-hidden opacity-15">
+    <div
+      aria-hidden={!gallery}
+      className={cn(
+        "absolute inset-0 overflow-hidden transition-opacity duration-700",
+        gallery ? "opacity-100" : "pointer-events-none opacity-15",
+      )}
+    >
       {layout.height > 0 && (
         <div
           className="animate-collage-drift will-change-transform motion-reduce:animate-none"
@@ -135,25 +181,52 @@ export function PhotoCollage() {
         >
           {Array.from({ length: copies }, (_, copy) => (
             <div key={copy} className="relative" style={{ height: layout.height }}>
-              {layout.photos.map((photo) => (
-                <img
-                  key={photo.key}
-                  src={`${PHOTO_DIR}${photo.src}`}
-                  alt=""
-                  width={photo.width}
-                  height={photo.height}
-                  loading="lazy"
-                  decoding="async"
-                  onLoad={() => markLoaded(photo.src)}
-                  className={`absolute border-[6px] border-white bg-white object-cover shadow-lg shadow-black/60 transition-opacity duration-1000 ${loaded.has(photo.src) ? "opacity-100" : "opacity-0"}`}
-                  style={{
-                    left: photo.left,
-                    top: photo.top,
-                    width: photo.displayWidth,
-                    height: photo.displayHeight,
-                    transform: `rotate(${photo.rotation}deg)`,
-                  }}
-                />
+              {layout.photos.map(({ photo, key, left, top, displayWidth, displayHeight, rotation }) => (
+                <button
+                  key={key}
+                  type="button"
+                  disabled={!gallery}
+                  tabIndex={copy === 0 ? undefined : -1}
+                  aria-label="View photo"
+                  data-collage-photo={photo.id}
+                  data-rotation={rotation}
+                  onClick={(event) => onSelect?.(indexById.get(photo.id) ?? 0, placementOf(event.currentTarget))}
+                  className={cn(
+                    "absolute overflow-hidden border-[6px] border-white bg-white shadow-lg shadow-black/60 transition-[scale] duration-200 focus-visible:outline-2 focus-visible:outline-offset-2",
+                    gallery && "cursor-pointer hover:scale-105",
+                    photo.id === hiddenId && "invisible",
+                  )}
+                  style={{ left, top, width: displayWidth, height: displayHeight, transform: `rotate(${rotation}deg)` }}
+                >
+                  <img
+                    src={photo.thumbnail.bw.src}
+                    alt=""
+                    width={photo.thumbnail.bw.width}
+                    height={photo.thumbnail.bw.height}
+                    loading="lazy"
+                    decoding="async"
+                    onLoad={() => markLoaded(photo.thumbnail.bw.src)}
+                    className={cn(
+                      "absolute inset-0 size-full object-cover transition-opacity duration-1000",
+                      loaded.has(photo.thumbnail.bw.src) ? "opacity-100" : "opacity-0",
+                    )}
+                  />
+                  {colorRequested && (
+                    <img
+                      src={photo.thumbnail.color.src}
+                      alt=""
+                      width={photo.thumbnail.color.width}
+                      height={photo.thumbnail.color.height}
+                      loading="lazy"
+                      decoding="async"
+                      onLoad={() => markLoaded(photo.thumbnail.color.src)}
+                      className={cn(
+                        "absolute inset-0 size-full object-cover transition-opacity duration-700",
+                        gallery && loaded.has(photo.thumbnail.color.src) ? "opacity-100" : "opacity-0",
+                      )}
+                    />
+                  )}
+                </button>
               ))}
             </div>
           ))}
