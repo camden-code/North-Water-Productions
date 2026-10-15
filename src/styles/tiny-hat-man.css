@@ -1,0 +1,269 @@
+.thm {
+  --thm-paper: #fbfbf9;
+  --thm-ink: #111111;
+  --thm-gray: #6b6b6b;
+  --thm-haze: #d9d9d6;
+  --thm-blood: #c3141b;
+  --thm-bg: radial-gradient(ellipse at 50% 30%, var(--thm-paper) 45%, var(--thm-haze) 100%) fixed, var(--thm-paper);
+
+  position: relative;
+  min-height: 100svh;
+  overflow-x: hidden;
+  background: var(--thm-bg);
+  color: var(--thm-ink);
+  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+.thm a {
+  color: inherit;
+}
+
+.thm :focus-visible {
+  outline: 2px solid var(--thm-blood);
+  outline-offset: 3px;
+}
+
+.thm-bar {
+  position: fixed;
+  inset: 0 0 auto;
+  z-index: 10;
+  display: grid;
+  grid-template-columns: 2.75rem 1fr 2.75rem;
+  align-items: center;
+  column-gap: 0.75rem;
+  padding: 1rem 1rem 2.5rem;
+  pointer-events: none;
+}
+
+.thm-bar::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: var(--thm-bg);
+  mask-image: linear-gradient(to bottom, black 55%, transparent);
+  opacity: var(--thm-scroll, 0);
+}
+
+.thm-bar-title {
+  display: flex;
+  justify-content: center;
+  align-items: baseline;
+  gap: 0.35em;
+  white-space: nowrap;
+  line-height: 1;
+  opacity: var(--thm-scroll, 0);
+  transform: translateY(calc((1 - var(--thm-scroll, 0)) * 1.5rem));
+}
+
+.thm-bar-title .thm-title-death {
+  font-size: clamp(1.4rem, 5vw, 2.25rem);
+}
+
+.thm-bar-title .thm-title-of {
+  font-size: clamp(0.75rem, 2.5vw, 1rem);
+  margin: 0;
+}
+
+.thm-bar-title .thm-title-man {
+  font-size: clamp(1.15rem, 4.2vw, 1.85rem);
+}
+
+.thm-back {
+  pointer-events: auto;
+  display: grid;
+  place-items: center;
+  width: 2.75rem;
+  height: 2.75rem;
+  border-radius: 9999px;
+  background: var(--thm-paper);
+  box-shadow: 0 0 0 2px var(--thm-ink);
+  transition:
+    background-color 150ms,
+    color 150ms;
+}
+
+.thm-back:hover {
+  background: var(--thm-ink);
+  color: var(--thm-paper);
+}
+
+.thm-back svg {
+  width: 1.375rem;
+  height: 1.375rem;
+}
+
+.thm-title {
+  padding: 4.5rem 1rem 2rem;
+  text-align: center;
+}
+
+.thm-title h1 {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  line-height: 0.9;
+  transform-origin: top center;
+  transform: translateY(calc(var(--thm-scroll, 0) * -2rem)) scale(calc(1 - var(--thm-scroll, 0) * 0.35));
+  opacity: calc(1 - var(--thm-scroll, 0));
+}
+
+.thm-title-death {
+  font-family: "Lacquer", system-ui;
+  font-size: clamp(4.5rem, 18vw, 10rem);
+  color: var(--thm-blood);
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+
+.thm-title-of {
+  font-family: "Covered By Your Grace", cursive;
+  font-size: clamp(1.25rem, 4vw, 2rem);
+  margin: 0.15em 0 0.1em;
+}
+
+.thm-title-man {
+  font-family: "Covered By Your Grace", cursive;
+  font-size: clamp(3rem, 12vw, 6.5rem);
+  text-transform: uppercase;
+}
+
+.thm-main {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 0 1rem;
+}
+
+.thm-poster {
+  width: min(100%, 26rem);
+  aspect-ratio: 2 / 3;
+  object-fit: cover;
+  box-shadow:
+    0 0 0 1px var(--thm-ink),
+    0 1.5rem 3rem -1rem rgb(0 0 0 / 0.45);
+}
+
+.thm-links {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.75rem;
+  margin-top: 2rem;
+  max-width: 34rem;
+}
+
+.thm-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.4rem 1.1rem 0.3rem;
+  border: 2px solid var(--thm-ink);
+  font-family: "Covered By Your Grace", cursive;
+  font-size: 1.5rem;
+  text-decoration: none;
+  text-transform: uppercase;
+  transition:
+    background-color 150ms,
+    border-color 150ms,
+    color 150ms;
+}
+
+.thm-link:hover {
+  background: var(--thm-blood);
+  border-color: var(--thm-blood);
+  color: var(--thm-paper);
+}
+
+.thm-link-icon {
+  width: 1.1rem;
+  height: 1.1rem;
+  flex-shrink: 0;
+}
+
+.thm-credits {
+  width: min(100%, 44rem);
+  margin-top: 5rem;
+  text-align: center;
+}
+
+.thm-credits-heading {
+  font-family: "Covered By Your Grace", cursive;
+  font-size: clamp(2.5rem, 9vw, 4rem);
+  line-height: 1;
+  text-transform: uppercase;
+}
+
+.thm-dept {
+  margin: 2.75rem 0 1rem;
+  font-family: "Lacquer", system-ui;
+  font-size: 1.5rem;
+  color: var(--thm-blood);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.thm-credit-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+}
+
+.thm-credit {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  column-gap: 1.5rem;
+  align-items: baseline;
+}
+
+.thm-credit dt {
+  text-align: right;
+  font-size: 0.75rem;
+  letter-spacing: 0.14em;
+  color: var(--thm-gray);
+  text-transform: uppercase;
+}
+
+.thm-credit dd {
+  text-align: left;
+  font-size: 1.05rem;
+  font-weight: 700;
+}
+
+.thm-credit dd a {
+  text-decoration: none;
+}
+
+.thm-credit dd a:hover {
+  color: var(--thm-blood);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.thm-backdrop {
+  display: block;
+  width: 100%;
+  margin-top: 5rem;
+  filter: grayscale(1) contrast(1.15);
+  mask-image: linear-gradient(to bottom, transparent, black 30%);
+}
+
+@media (max-width: 30rem) {
+  .thm-credit {
+    grid-template-columns: 1fr;
+    text-align: center;
+  }
+
+  .thm-credit dt,
+  .thm-credit dd {
+    text-align: center;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .thm-back,
+  .thm-link {
+    transition: none;
+  }
+}

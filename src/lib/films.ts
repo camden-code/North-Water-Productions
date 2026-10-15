@@ -16,6 +16,7 @@ export type Film = {
   watchUrl?: string
   trailerUrl?: string
   soundtrackUrl?: string
+  pagePath?: string
 }
 
 export const films: Film[] = [
@@ -29,6 +30,7 @@ export const films: Film[] = [
     slug: "death-of-a-tiny-hat-man",
     title: "Death of a Tiny Hat Man",
     release: { kind: "date", date: "2025-11-22" },
+    pagePath: "/tinyhatman",
     posterUrl:
       "https://a.ltrbxd.com/resized/film-poster/1/4/2/0/9/7/0/1420970-death-of-a-tiny-hat-man-0-600-0-900-crop.jpg?v=154c28cf94",
     description:

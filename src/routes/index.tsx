@@ -4,9 +4,11 @@ import { AboutPage } from "@/routes/about"
 import { ContactPage } from "@/routes/contact"
 import { HomePage } from "@/routes/home"
 import { NotFoundPage } from "@/routes/not-found"
+import { TinyHatManPage } from "@/routes/tiny-hat-man"
 
 export const router = createBrowserRouter(
   [
+    { path: "tinyhatman", element: <TinyHatManPage /> },
     {
       element: <NorthwaterPictures />,
       children: [
