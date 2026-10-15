@@ -1,6 +1,7 @@
 import { useRef, useState, type PointerEvent } from "react"
 import { flushSync } from "react-dom"
-import { Film as FilmIcon, Music, Play, X } from "lucide-react"
+import { Link } from "react-router"
+import { ArrowRight, Film as FilmIcon, Music, Play, X } from "lucide-react"
 import { ProfileLinkIcon } from "@/components/profile-link-icon"
 import { formatRelease, type Film } from "@/lib/films"
 import { cn } from "@/lib/utils"
@@ -138,11 +139,26 @@ export function FilmCard({ film, flipped, onFlip, onUnflip }: FilmCardProps) {
             <p className="text-muted-foreground">{release}</p>
           </header>
           <p className="mt-4 flex-1 overflow-y-auto">{film.description}</p>
+          {film.pagePath && (
+            <Link
+              to={film.pagePath}
+              className="mt-4 inline-flex items-center gap-2 self-center rounded-full bg-primary px-5 py-2 font-bold text-primary-foreground transition-opacity hover:opacity-90 focus-visible:outline-2 focus-visible:outline-offset-2"
+            >
+              Film page
+              <ArrowRight aria-hidden className="size-4" />
+            </Link>
+          )}
           <footer className="mt-4 flex flex-wrap gap-4 border-t pt-4">
             {film.letterboxdUrl && (
               <a href={film.letterboxdUrl} target="_blank" rel="noreferrer" className={linkClass}>
                 <ProfileLinkIcon label="Letterboxd" className="size-4" />
                 Letterboxd
+              </a>
+            )}
+            {film.watchUrl && (
+              <a href={film.watchUrl} target="_blank" rel="noreferrer" className={linkClass}>
+                <Play aria-hidden className="size-4" />
+                Watch
               </a>
             )}
             {film.trailerUrl && (

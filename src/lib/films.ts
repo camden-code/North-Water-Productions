@@ -13,8 +13,10 @@ export type Film = {
   description: string
   quote?: FilmQuote
   letterboxdUrl?: string
+  watchUrl?: string
   trailerUrl?: string
   soundtrackUrl?: string
+  pagePath?: string
 }
 
 export const films: Film[] = [
@@ -28,6 +30,7 @@ export const films: Film[] = [
     slug: "death-of-a-tiny-hat-man",
     title: "Death of a Tiny Hat Man",
     release: { kind: "date", date: "2025-11-22" },
+    pagePath: "/tinyhatman",
     posterUrl:
       "https://a.ltrbxd.com/resized/film-poster/1/4/2/0/9/7/0/1420970-death-of-a-tiny-hat-man-0-600-0-900-crop.jpg?v=154c28cf94",
     description:
@@ -47,6 +50,7 @@ export const films: Film[] = [
       "In this dark thriller, three individuals, each with their own painful past, are drawn together by a series of mysterious events that lead them to a common target: the man who wronged them.",
     quote: { text: "Truly a film without ‘filler’.", author: "comrade_yui" },
     letterboxdUrl: "https://letterboxd.com/film/feel-good-hotline/",
+    watchUrl: "https://fawesome.tv/movies/10666523/feel-good-hotline",
   },
   {
     slug: "daemon",
@@ -58,12 +62,20 @@ export const films: Film[] = [
     letterboxdUrl: "https://letterboxd.com/film/daemon-1/",
   },
   {
+    slug: "pumpkin-boys-daydream",
+    title: "Pumpkin Boy's Daydream",
+    release: { kind: "date", date: "2026-09-26" },
+    posterUrl: `${import.meta.env.BASE_URL}films/pumpkin-boys-daydream.png`,
+    description: "Coming soon.",
+  },
+  {
     slug: "i-feel-better-now",
     title: "I Feel Better Now",
     release: { kind: "year", year: 2020 },
     posterUrl: "https://a.ltrbxd.com/resized/film-poster/6/5/1/6/7/9/651679-i-feel-better-now-0-600-0-900-crop.jpg?v=ee769ce02a",
     description: "A paranoid young man deals with a secret hiding in his closet.",
     letterboxdUrl: "https://letterboxd.com/film/i-feel-better-now/",
+    watchUrl: "https://youtu.be/BEiP9alSraU",
   },
   {
     slug: "last-slice",
@@ -72,6 +84,7 @@ export const films: Film[] = [
     posterUrl: "https://a.ltrbxd.com/resized/film-poster/6/1/8/0/9/9/618099-last-slice-0-600-0-900-crop.jpg?v=0c34fdf490",
     description: "Low budget, Horror, Comedy short film.",
     letterboxdUrl: "https://letterboxd.com/film/last-slice/",
+    watchUrl: "https://www.youtube.com/watch?v=jrs-mywqxro",
   },
 ]
 
