@@ -1,4 +1,4 @@
-import { mkdir, readFile, stat } from 'node:fs/promises'
+import { mkdir, readdir, readFile, stat, writeFile } from 'node:fs/promises'
 import path from 'node:path'
 import { parseArgs } from 'node:util'
 import { unzipSync } from 'fflate'
@@ -10,12 +10,13 @@ const HEIC_BRANDS = new Set(['heic', 'heix', 'heim', 'heis', 'hevc', 'hevx', 'mi
 
 const USAGE = `Usage: npm run bts -- <zip> [options]
 
-Extracts images from <zip>, converts them to black & white WebP and writes them to the output folder.
+Extracts images from <zip>, converts them to black & white WebP and writes them to the output folder,
+along with a manifest.json listing every WebP in that folder.
 
 Options:
   -o, --out <dir>        Output folder (default: public/bts)
-  -q, --quality <n>      WebP quality 1-100 (default: 80)
-  -m, --max-size <px>    Longest edge in pixels; smaller images are not upscaled (default: 1920)
+  -q, --quality <n>      WebP quality 1-100 (default: 70)
+  -m, --max-size <px>    Longest edge in pixels; smaller images are not upscaled (default: 640)
   -h, --help             Show this message`
 
 /** @param {string} message */
@@ -95,8 +96,8 @@ const { values, positionals } = parseArgs({
   allowPositionals: true,
   options: {
     out: { type: 'string', short: 'o', default: 'public/bts' },
-    quality: { type: 'string', short: 'q', default: '80' },
-    'max-size': { type: 'string', short: 'm', default: '1920' },
+    quality: { type: 'string', short: 'q', default: '70' },
+    'max-size': { type: 'string', short: 'm', default: '640' },
     help: { type: 'boolean', short: 'h', default: false },
   },
 })
@@ -116,9 +117,15 @@ const outDir = path.resolve(values.out)
 const zipStats = await stat(zipPath).catch(() => null)
 if (!zipStats?.isFile()) fail(`zip file not found: ${zipPath}`)
 
-const entries = unzipSync(new Uint8Array(await readFile(zipPath)), {
-  filter: (file) => isImageEntry(file.name),
-})
+/** @type {Record<string, Uint8Array>} */
+let entries = {}
+try {
+  entries = unzipSync(new Uint8Array(await readFile(zipPath)), {
+    filter: (file) => isImageEntry(file.name),
+  })
+} catch {
+  fail(`not a valid zip file: ${zipPath}`)
+}
 const names = Object.keys(entries).sort()
 
 if (names.length === 0) fail(`no images found in ${zipPath}`)
@@ -152,6 +159,13 @@ for (const name of names) {
     console.error(`Failed: ${name}: ${error instanceof Error ? error.message : String(error)}`)
   }
 }
+
+const manifest = []
+for (const file of (await readdir(outDir)).filter((file) => file.endsWith('.webp')).sort()) {
+  const { width, height } = await sharp(path.join(outDir, file)).metadata()
+  manifest.push({ src: file, width, height })
+}
+await writeFile(path.join(outDir, 'manifest.json'), `${JSON.stringify(manifest, null, 2)}\n`)
 
 const converted = names.length - failed
 console.log(
