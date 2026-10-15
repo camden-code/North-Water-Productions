@@ -38,7 +38,7 @@ export const team: TeamMember[] = [
     name: "Audrey-Anna Gamache",
     role: "Assistant Director II & Co-Writer",
     photoUrl: `${import.meta.env.BASE_URL}team/audrey.webp`,
-    bio: "Audrey is Xavier's sister and, in many ways, his co-director. Audrey works closely with Xavier from the first inception of an idea, through the creation of the script, proof reading, and ensures consistency while filming. Xavier moves fast and always has a new idea, and Audrey keeps the work grounded, focused, and true to what the film needs. That balance is at the heart of how North Water Pictures works. She lives in central Maine.",
+    bio: "Audrey is Xavier's sister and, in many ways, his co-director. Audrey works closely with Xavier from the first inception of an idea, through the creation of the script, proof reading, and ensures consistency while filming. Xavier moves fast and always has a new idea, and Audrey keeps the work grounded, focused, and true to what the film needs. That balance is at the heart of how Northwater Pictures works. She lives in central Maine.",
     links: [
       { label: "Letterboxd", href: "https://letterboxd.com/actor/audrey-anna-gamache-1/" },
       { label: "Instagram", href: "https://www.instagram.com/scoutylynch/" },

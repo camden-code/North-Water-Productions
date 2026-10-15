@@ -183,6 +183,20 @@
 
   --animate-collapsible-down: collapsible-down 200ms ease-out;
   --animate-collapsible-up: collapsible-up 200ms ease-out;
+  --animate-collage-drift: collage-drift 60s linear infinite;
+  --animate-fade-in: fade-in 300ms ease-out;
+
+  @keyframes fade-in {
+    from {
+      opacity: 0;
+    }
+  }
+
+  @keyframes collage-drift {
+    to {
+      transform: translate3d(0, calc(-1 * var(--collage-height)), 0);
+    }
+  }
 
   @keyframes collapsible-down {
     from {
@@ -286,6 +300,10 @@
   --color-neutral-200: oklch(var(--neutral-200));
   --color-neutral-300: oklch(var(--neutral-300));
   --color-neutral-400: oklch(var(--neutral-400));
+}
+
+@utility fade-x {
+  mask-image: linear-gradient(to right, transparent, black 3rem, black calc(100% - 3rem), transparent);
 }
 
 @layer base {
