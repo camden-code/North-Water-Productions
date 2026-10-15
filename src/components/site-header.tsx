@@ -19,9 +19,11 @@ export function SiteHeader() {
 
   return (
     <>
-      <header className="sticky top-0 z-50 border-b border-neutral-400 bg-background/80 backdrop-blur">
-        <Collapsible open={open} onOpenChange={setOpen}>
-          <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-6 py-4">
+      {/* Fixed rather than sticky so it doesn't move when the document height or scroll position jumps (e.g. on iOS). */}
+      <div aria-hidden="true" className="h-20 shrink-0 sm:h-16" />
+      <header className="fixed inset-x-0 top-0 z-50 h-20 border-b border-neutral-400 bg-background/80 backdrop-blur sm:h-16">
+        <Collapsible open={open} onOpenChange={setOpen} className="h-full">
+          <div className="mx-auto flex h-full max-w-6xl items-center justify-between gap-4 px-6">
             <Link to="/" onClick={() => setOpen(false)} className="font-heading text-xl font-bold tracking-tight whitespace-nowrap">
               Northwater&nbsp;Pictures
             </Link>
