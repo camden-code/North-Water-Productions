@@ -1,6 +1,7 @@
 import { Fragment } from "react"
 import { TeamMemberProfile } from "@/components/team-member-profile"
 import { team } from "@/lib/team"
+import { ExternalLink } from "../components/external-link"
 
 export function AboutPage() {
   return (
@@ -8,34 +9,20 @@ export function AboutPage() {
       <div className="space-y-4">
         <h1 className="text-4xl font-bold tracking-tight sm:text-5xl">About&nbsp;Us</h1>
         <p className="text-xl">
-          North Water Pictures is an independent film company based in Maine. We're a small team, and that's our
-          strength: everyone takes on several roles, decisions happen fast, and nothing stands between an idea and the
-          camera. We work without a budget and without anyone's permission, which leaves us free to make the
-          ambitious, strange, and personal films we want to see.
+          North Water Pictures is an independent film company based in Maine. Made up of only a handful of crew,
+          everyone takes on several roles, working without a budget to fulfill our passion of making ambitious,
+          strange, and sometimes personal films.
         </p>
         <p className="text-xl">
-          Our films are made in Maine, with local casts, crews, and locations, and they premiere in Maine theaters,
-          from the{" "}
-          <a
-            href="https://www.eveningstarcinema.com/"
-            target="_blank"
-            rel="noreferrer"
-            className="text-primary underline-offset-4 hover:underline"
-          >
-            Eveningstar Cinema
-          </a>{" "}
-          in Brunswick to the{" "}
-          <a
-            href="https://apohadiontheater.org/"
-            target="_blank"
-            rel="noreferrer"
-            className="text-primary underline-offset-4 hover:underline"
-          >
-            Apohadion Theater
-          </a>{" "}
-          in Portland. We've played to sold-out
-          crowds and reached audiences online, and we're now at work on Alien Mind Beam, our fourth feature
-          film.
+          All of our films are shot in Maine, with a local cast and crew, and premiere at independent Maine theaters,
+          such as the <ExternalLink href="https://www.eveningstarcinema.com/">Eveningstar Cinema</ExternalLink> in
+          Brunswick and the <ExternalLink href="https://apohadiontheater.org/">Apohadion Theater</ExternalLink> in
+          Portland. As well as having our last feature, &quot;Death of a Tiny Hat Man&quot; premiere to a sold out
+          theater, our second feature, &quot;Feel Good Hotline&quot; is streaming on{" "}
+          <ExternalLink href="https://fawesome.tv/movies/10666523/feel-good-hotline">Fawesome TV</ExternalLink>.
+          Currently we are at work on our fourth feature film, Alien Mind Beam, a mind-bending psychological thriller
+          that delves into the philosophical questions which arise as technological progress advances at a pace rarely
+          seen before in human history
         </p>
       </div>
       <div className="space-y-10">
