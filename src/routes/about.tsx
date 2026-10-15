@@ -87,7 +87,7 @@ export function AboutPage() {
           <div className="space-y-4">
             <h1 className="text-4xl font-bold tracking-tight sm:text-5xl">About&nbsp;Us</h1>
             <p className="text-xl">
-              North Water Pictures is an independent film company based in Maine. Made up of only a handful of crew,
+              Northwater Pictures is an independent film company based in Maine. Made up of only a handful of crew,
               everyone takes on several roles, working without a budget to fulfill our passion of making ambitious,
               strange, and sometimes personal films.
             </p>

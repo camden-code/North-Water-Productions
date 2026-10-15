@@ -63,9 +63,9 @@ export function TinyHatManPage() {
 
   return (
     <div ref={pageRef} className="thm">
-      <title>Death of a Tiny Hat Man | Northwater Pictures</title>
+      <title>Death of a Tiny Hat Man | Northwater&nbsp;Pictures</title>
       <div className="thm-bar">
-        <Link to="/" aria-label="Back to Northwater Pictures" className="thm-back">
+        <Link to="/" aria-label="Back to Northwater&nbsp;Pictures" className="thm-back">
           <ArrowLeft aria-hidden />
         </Link>
         <p aria-hidden className="thm-bar-title">

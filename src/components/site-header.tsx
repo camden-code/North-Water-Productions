@@ -23,7 +23,7 @@ export function SiteHeader() {
         <Collapsible open={open} onOpenChange={setOpen}>
           <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-6 py-4">
             <Link to="/" onClick={() => setOpen(false)} className="font-heading text-xl font-bold tracking-tight whitespace-nowrap">
-              Northwater Pictures
+              Northwater&nbsp;Pictures
             </Link>
             <nav className="hidden items-center gap-6 sm:flex">
               {navItems.map((item) => (
