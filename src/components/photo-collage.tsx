@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState, type CSSProperties } from "react"
+import { useEffect, useLayoutEffect, useMemo, useRef, useState, type CSSProperties } from "react"
 import type { BtsPhoto } from "@/lib/bts-photos"
 import { cn } from "@/lib/utils"
 
@@ -42,6 +42,7 @@ const JITTER = 0.4
 const MAX_ROTATION = 24
 const SKIP_CHANCE = 0.15
 const DRIFT_PX_PER_SECOND = 6
+const DRIFT_RESUME_DELAY_MS = 800
 
 function seededRandom(seed: number): () => number {
   let state = seed
@@ -139,6 +140,9 @@ export function PhotoCollage({ photos, mode, hiddenId, onSelect }: PhotoCollageP
   const [seed] = useState(() => Math.floor(Math.random() * 2 ** 32))
   const [loaded, setLoaded] = useState<ReadonlySet<string>>(() => new Set())
   const [colorRequested, setColorRequested] = useState(false)
+  const scrollerRef = useRef<HTMLDivElement>(null)
+  const resumeTimeoutRef = useRef<number | undefined>(undefined)
+  const [scrolling, setScrolling] = useState(false)
   const gallery = mode === "gallery"
 
   useEffect(() => {
@@ -157,21 +161,48 @@ export function PhotoCollage({ photos, mode, hiddenId, onSelect }: PhotoCollageP
 
   const layout = useMemo(() => buildLayout(photos, viewport.width, seed), [photos, viewport.width, seed])
   const indexById = useMemo(() => new Map(photos.map((photo, index) => [photo.id, index])), [photos])
-  const copies = Math.ceil(viewport.height / layout.height) + 1
+  // The scroll position is kept within the second copy and the drift moves up to one more, so two
+  // copies above the viewport plus enough to fill it are always needed.
+  const copies = Math.ceil(viewport.height / layout.height) + 3
+
+  // Copies are identical, so jumping by a whole copy keeps the scroll looping seamlessly.
+  const wrapScroll = () => {
+    const scroller = scrollerRef.current
+    if (!scroller || layout.height <= 0) return
+    if (scroller.scrollTop < layout.height) scroller.scrollTop += layout.height
+    else if (scroller.scrollTop >= layout.height * 2) scroller.scrollTop -= layout.height
+  }
+
+  useLayoutEffect(wrapScroll)
+
+  useEffect(() => () => window.clearTimeout(resumeTimeoutRef.current), [])
+
+  const handleScroll = () => {
+    wrapScroll()
+    if (!gallery) return
+    setScrolling(true)
+    window.clearTimeout(resumeTimeoutRef.current)
+    resumeTimeoutRef.current = window.setTimeout(() => setScrolling(false), DRIFT_RESUME_DELAY_MS)
+  }
 
   const markLoaded = (src: string) => setLoaded((current) => (current.has(src) ? current : new Set(current).add(src)))
 
   return (
     <div
+      ref={scrollerRef}
       aria-hidden={!gallery}
+      onScroll={handleScroll}
       className={cn(
-        "absolute inset-0 overflow-hidden transition-opacity duration-700",
-        gallery ? "opacity-100" : "pointer-events-none opacity-15",
+        "absolute inset-0 overscroll-contain transition-opacity duration-700 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden",
+        gallery ? "overflow-y-auto opacity-100" : "pointer-events-none overflow-hidden opacity-15",
       )}
     >
       {layout.height > 0 && (
         <div
-          className="animate-collage-drift will-change-transform motion-reduce:animate-none"
+          className={cn(
+            "animate-collage-drift will-change-transform motion-reduce:animate-none",
+            gallery && scrolling && "[animation-play-state:paused]",
+          )}
           style={
             {
               "--collage-height": `${layout.height}px`,
@@ -186,7 +217,7 @@ export function PhotoCollage({ photos, mode, hiddenId, onSelect }: PhotoCollageP
                   key={key}
                   type="button"
                   disabled={!gallery}
-                  tabIndex={copy === 0 ? undefined : -1}
+                  tabIndex={copy === 1 ? undefined : -1}
                   aria-label="View photo"
                   data-collage-photo={photo.id}
                   data-rotation={rotation}

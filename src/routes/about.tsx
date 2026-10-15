@@ -1,4 +1,4 @@
-import { Fragment, useEffect, useRef, useState } from "react"
+import { Fragment, useEffect, useLayoutEffect, useRef, useState } from "react"
 import { Images, X } from "lucide-react"
 import { PhotoCollage, type PhotoPlacement } from "@/components/photo-collage"
 import { PhotoLightbox } from "@/components/photo-lightbox"
@@ -13,24 +13,41 @@ type ViewerState = {
   origin: PhotoPlacement
 }
 
-const pillButtonClassName =
-  "inline-flex cursor-pointer items-center gap-2 rounded-full border border-neutral-400 bg-background/80 px-6 py-3 text-lg backdrop-blur transition-colors hover:bg-muted focus-visible:outline-2 focus-visible:outline-offset-2"
+const CONTENT_FADE_MS = 300
 
 export function AboutPage() {
   const [gallery, setGallery] = useState(false)
   const [viewer, setViewer] = useState<ViewerState | null>(null)
-  const openButtonRef = useRef<HTMLButtonElement>(null)
-  const wasGallery = useRef(false)
+  const [contentMounted, setContentMounted] = useState(true)
+  const savedScroll = useRef<number | null>(null)
 
+  const enterGallery = () => {
+    savedScroll.current = window.scrollY
+    setGallery(true)
+  }
+
+  const exitGallery = () => {
+    setGallery(false)
+    setContentMounted(true)
+  }
+
+  // The content is unmounted once it has faded out so the page scrollbar goes away in the gallery.
   useEffect(() => {
-    if (wasGallery.current && !gallery) openButtonRef.current?.focus({ preventScroll: true })
-    wasGallery.current = gallery
+    if (!gallery) return
+    const timeout = window.setTimeout(() => setContentMounted(false), CONTENT_FADE_MS)
+    return () => window.clearTimeout(timeout)
   }, [gallery])
+
+  useLayoutEffect(() => {
+    if (!contentMounted || savedScroll.current === null) return
+    window.scrollTo(0, savedScroll.current)
+    savedScroll.current = null
+  }, [contentMounted])
 
   useEffect(() => {
     if (!gallery || viewer) return
     const keydown = (event: KeyboardEvent) => {
-      if (event.key === "Escape") setGallery(false)
+      if (event.key === "Escape") exitGallery()
     }
     window.addEventListener("keydown", keydown)
     return () => window.removeEventListener("keydown", keydown)
@@ -59,56 +76,52 @@ export function AboutPage() {
           )}
         />
       </div>
-      <section
-        inert={gallery}
-        className={cn(
-          "mx-auto w-full max-w-4xl space-y-14 py-12 transition-[opacity,visibility] duration-300",
-          gallery && "invisible opacity-0",
-        )}
-      >
-        <div className="space-y-4">
-          <h1 className="text-4xl font-bold tracking-tight sm:text-5xl">About&nbsp;Us</h1>
-          <p className="text-xl">
-            North Water Pictures is an independent film company based in Maine. Made up of only a handful of crew,
-            everyone takes on several roles, working without a budget to fulfill our passion of making ambitious,
-            strange, and sometimes personal films.
-          </p>
-          <p className="text-xl">
-            All of our films are shot in Maine, with a local cast and crew, and premiere at independent Maine theaters,
-            such as the <ExternalLink href="https://www.eveningstarcinema.com/">Eveningstar Cinema</ExternalLink> in
-            Brunswick and the <ExternalLink href="https://apohadiontheater.org/">Apohadion Theater</ExternalLink> in
-            Portland. As well as having our last feature, &quot;Death of a Tiny Hat Man&quot; premiere to a sold out
-            theater, our second feature, &quot;Feel Good Hotline&quot; is streaming on{" "}
-            <ExternalLink href="https://fawesome.tv/movies/10666523/feel-good-hotline">Fawesome TV</ExternalLink>.
-            Currently we are at work on our fourth feature film, Alien Mind Beam, a mind-bending psychological thriller
-            that delves into the philosophical questions which arise as technological progress advances at a pace rarely
-            seen before in human history
-          </p>
-        </div>
-        <div className="space-y-10">
-          <h2 className="text-3xl font-bold">The Team</h2>
-          {team.map((member, index) => (
-            <Fragment key={member.name}>
-              {index > 0 && <hr className="sm:hidden" />}
-              <TeamMemberProfile member={member} />
-            </Fragment>
-          ))}
-        </div>
-        <div className="flex justify-center">
-          <button ref={openButtonRef} type="button" onClick={() => setGallery(true)} className={pillButtonClassName}>
-            <Images aria-hidden className="size-5" />
-            Behind the Scenes
-          </button>
-        </div>
-      </section>
-      {gallery && (
-        <div className="fixed inset-x-0 bottom-6 z-20 flex justify-center motion-safe:animate-fade-in">
-          <button type="button" autoFocus onClick={() => setGallery(false)} className={pillButtonClassName}>
-            <X aria-hidden className="size-5" />
-            Back to About Us
-          </button>
-        </div>
+      {contentMounted && (
+        <section
+          inert={gallery}
+          className={cn(
+            "mx-auto w-full max-w-4xl space-y-14 pt-12 pb-28 transition-opacity duration-300 motion-safe:animate-fade-in",
+            gallery && "opacity-0",
+          )}
+        >
+          <div className="space-y-4">
+            <h1 className="text-4xl font-bold tracking-tight sm:text-5xl">About&nbsp;Us</h1>
+            <p className="text-xl">
+              North Water Pictures is an independent film company based in Maine. Made up of only a handful of crew,
+              everyone takes on several roles, working without a budget to fulfill our passion of making ambitious,
+              strange, and sometimes personal films.
+            </p>
+            <p className="text-xl">
+              All of our films are shot in Maine, with a local cast and crew, and premiere at independent Maine theaters,
+              such as the <ExternalLink href="https://www.eveningstarcinema.com/">Eveningstar Cinema</ExternalLink> in
+              Brunswick and the <ExternalLink href="https://apohadiontheater.org/">Apohadion Theater</ExternalLink> in
+              Portland. As well as having our last feature, &quot;Death of a Tiny Hat Man&quot; premiere to a sold out
+              theater, our second feature, &quot;Feel Good Hotline&quot; is streaming on{" "}
+              <ExternalLink href="https://fawesome.tv/movies/10666523/feel-good-hotline">Fawesome TV</ExternalLink>.
+              Currently we are at work on our fourth feature film, Alien Mind Beam, a mind-bending psychological thriller
+              that delves into the philosophical questions which arise as technological progress advances at a pace rarely
+              seen before in human history
+            </p>
+          </div>
+          <div className="space-y-10">
+            <h2 className="text-3xl font-bold">The Team</h2>
+            {team.map((member, index) => (
+              <Fragment key={member.name}>
+                {index > 0 && <hr className="sm:hidden" />}
+                <TeamMemberProfile member={member} />
+              </Fragment>
+            ))}
+          </div>
+        </section>
       )}
+      <button
+        type="button"
+        onClick={gallery ? exitGallery : enterGallery}
+        className="fixed bottom-6 left-1/2 z-20 inline-flex -translate-x-1/2 cursor-pointer items-center gap-2 rounded-full border border-neutral-400 bg-background/80 px-6 py-3 text-lg whitespace-nowrap shadow-lg shadow-black/40 backdrop-blur transition-colors hover:bg-muted focus-visible:outline-2 focus-visible:outline-offset-2 sm:right-6 sm:left-auto sm:translate-x-0"
+      >
+        {gallery ? <X aria-hidden className="size-5" /> : <Images aria-hidden className="size-5" />}
+        {gallery ? "Back to About Us" : "Behind the Scenes"}
+      </button>
       {viewer && (
         <PhotoLightbox
           photos={btsPhotos}
