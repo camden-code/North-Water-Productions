@@ -71,7 +71,7 @@ export function AboutPage() {
         <div
           aria-hidden="true"
           className={cn(
-            "pointer-events-none absolute inset-0 bg-background/75 transition-opacity duration-700 lg:inset-x-auto lg:left-1/2 lg:w-[calc(var(--container-4xl)+8rem)] lg:-translate-x-1/2 lg:fade-x",
+            "pointer-events-none absolute inset-0 bg-background/50 backdrop-blur-[3px] transition-opacity duration-700 lg:inset-x-auto lg:left-1/2 lg:w-[calc(var(--container-4xl)+8rem)] lg:-translate-x-1/2 lg:fade-x",
             gallery && "opacity-0",
           )}
         />
