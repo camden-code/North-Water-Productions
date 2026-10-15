@@ -5,6 +5,7 @@ import { ArrowRight, Film as FilmIcon, Music, Play, X } from "lucide-react"
 import { ProfileLinkIcon } from "@/components/profile-link-icon"
 import { formatRelease, type Film } from "@/lib/films"
 import { cn } from "@/lib/utils"
+import { ExternalLink } from "./external-link"
 
 type FilmCardProps = {
   film: Film
@@ -20,7 +21,7 @@ const FLIP_MS = 500
 
 type Tilt = { x: number; y: number }
 
-const linkClass = "inline-flex items-center gap-1.5 text-primary underline-offset-4 hover:underline"
+const linkClass = "inline-flex items-center gap-1.5"
 
 export function FilmCard({ film, flipped, onFlip, onUnflip }: FilmCardProps) {
   const release = formatRelease(film.release)
@@ -150,28 +151,28 @@ export function FilmCard({ film, flipped, onFlip, onUnflip }: FilmCardProps) {
           )}
           <footer className="mt-4 flex flex-wrap gap-4 border-t pt-4">
             {film.letterboxdUrl && (
-              <a href={film.letterboxdUrl} target="_blank" rel="noreferrer" className={linkClass}>
+              <ExternalLink href={film.letterboxdUrl} className={linkClass}>
                 <ProfileLinkIcon label="Letterboxd" className="size-4" />
                 Letterboxd
-              </a>
+              </ExternalLink>
             )}
             {film.watchUrl && (
-              <a href={film.watchUrl} target="_blank" rel="noreferrer" className={linkClass}>
+              <ExternalLink href={film.watchUrl} className={linkClass}>
                 <Play aria-hidden className="size-4" />
                 Watch
-              </a>
+              </ExternalLink>
             )}
             {film.trailerUrl && (
-              <a href={film.trailerUrl} target="_blank" rel="noreferrer" className={linkClass}>
+              <ExternalLink href={film.trailerUrl} className={linkClass}>
                 <Play aria-hidden className="size-4" />
                 Trailer
-              </a>
+              </ExternalLink>
             )}
             {film.soundtrackUrl && (
-              <a href={film.soundtrackUrl} target="_blank" rel="noreferrer" className={linkClass}>
+              <ExternalLink href={film.soundtrackUrl} className={linkClass}>
                 <Music aria-hidden className="size-4" />
                 Soundtrack
-              </a>
+              </ExternalLink>
             )}
           </footer>
         </div>
