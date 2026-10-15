@@ -1,7 +1,7 @@
 import { Fragment } from "react"
 import { TeamMemberProfile } from "@/components/team-member-profile"
 import { team } from "@/lib/team"
-import { ExternalLink } from "lucide-react"
+import { ExternalLink } from "../components/external-link"
 
 export function AboutPage() {
   return (

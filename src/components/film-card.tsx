@@ -49,21 +49,22 @@ export function FilmCard({ film, flipped, onFlip, onUnflip }: FilmCardProps) {
     })
   }
 
+  // Upcoming film - Cannot be flipped, and changes size on mobile
   if (upcoming) {
     return (
       <>
-        <article className="flex items-center gap-4 rounded-xl bg-muted p-4 text-muted-foreground shadow-sm sm:hidden">
+        <article className="flex items-center gap-4 rounded-xl bg-primary-200 p-4 text-primary-900 shadow-sm sm:hidden">
           <FilmIcon aria-hidden className="size-6 shrink-0" />
           <div>
             <h2 className="text-lg leading-tight font-bold text-foreground">{film.title}</h2>
             <p>{release}</p>
           </div>
         </article>
-        <article className="hidden aspect-[2/3] overflow-hidden rounded-xl bg-muted shadow-sm sm:block">
+        <article className="hidden aspect-[2/3] overflow-hidden rounded-xl bg-primary-100 shadow-sm sm:block">
           {film.posterUrl ? (
             <img src={film.posterUrl} alt={film.title} loading="lazy" className="size-full object-cover" />
           ) : (
-            <div className="flex size-full flex-col items-center justify-center gap-3 p-6 text-center text-muted-foreground">
+            <div className="flex size-full flex-col items-center justify-center gap-3 p-6 text-center text-primary-800">
               <FilmIcon aria-hidden className="size-10" />
               <h2 className="text-2xl font-bold text-foreground">{film.title}</h2>
               <p>{release}</p>
@@ -74,6 +75,7 @@ export function FilmCard({ film, flipped, onFlip, onUnflip }: FilmCardProps) {
     )
   }
 
+  // Normal film card
   return (
     <article
       data-film-card={film.slug}
@@ -93,6 +95,8 @@ export function FilmCard({ film, flipped, onFlip, onUnflip }: FilmCardProps) {
           flipped && "rotate-y-180",
         )}
       >
+
+        {/* Front */}
         <button
           ref={frontRef}
           type="button"
@@ -123,6 +127,7 @@ export function FilmCard({ film, flipped, onFlip, onUnflip }: FilmCardProps) {
           )}
         </button>
 
+        {/* Back */}
         <div
           inert={!flipped}
           className="absolute inset-0 flex -translate-z-px rotate-y-180 flex-col overflow-hidden rounded-xl border bg-card p-5 text-card-foreground shadow-sm backface-hidden"
@@ -177,6 +182,6 @@ export function FilmCard({ film, flipped, onFlip, onUnflip }: FilmCardProps) {
           </footer>
         </div>
       </div>
-    </article>
+    </article >
   )
 }
