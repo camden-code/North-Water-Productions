@@ -41,6 +41,7 @@ type CollageLayout = {
 type CollageCard = {
   placed: PlacedPhoto
   key: string
+  row: number
   top: number
 }
 
@@ -64,6 +65,7 @@ const PHOTO_FILL = 0.62
 const JITTER = 0.4
 const MAX_ROTATION = 24
 const SKIP_CHANCE = 0.15
+// The widest card border, used so the rendered window never cuts off a card's edge.
 const CARD_BORDER_PX = 6
 const SUBSET_SCREENS = 1.5
 const KEEP_MARGIN_ROWS = 3
@@ -215,11 +217,14 @@ function cardsBetween(layout: CollageLayout, top: number, bottom: number): Colla
       cards.push({
         placed,
         key: `${row}:${placed.column}:${placed.photo.id}`,
+        row,
         top: origin + placed.top + period * periodHeight,
       })
     }
   }
-  return cards
+  // Reading order, so keyboard focus moves down the collage. Cards already rendered keep their relative
+  // order as the window moves, so React only inserts and removes at the ends.
+  return cards.sort((a, b) => a.row - b.row || a.placed.left - b.placed.left)
 }
 
 function pushScroll(motion: Motion, delta: number) {
@@ -273,6 +278,7 @@ export function PhotoCollage({ photos, mode, hiddenId, onSelect }: PhotoCollageP
   const [layout, setLayout] = useState(() => initialLayout(photos))
   const [windowRow, setWindowRow] = useState(0)
   const [loaded, setLoaded] = useState<ReadonlySet<string>>(() => new Set())
+  const [colorLoaded, setColorLoaded] = useState<ReadonlySet<string>>(() => new Set())
   const [colorPhase, setColorPhase] = useState<ColorPhase>("bw")
   const [colorFading, setColorFading] = useState(false)
   const containerRef = useRef<HTMLDivElement>(null)
@@ -318,6 +324,7 @@ export function PhotoCollage({ photos, mode, hiddenId, onSelect }: PhotoCollageP
       return
     }
 
+    setColorFading(false)
     setLayout((current) =>
       continueLayout(current, position, window.innerHeight, (kept) => {
         const keptIds = new Set(kept.map(({ photo }) => photo.id))
@@ -339,10 +346,14 @@ export function PhotoCollage({ photos, mode, hiddenId, onSelect }: PhotoCollageP
     return () => window.clearTimeout(timeout)
   }, [colorPhase])
 
-  // Color images stay mounted only long enough to fade out after leaving the gallery.
+  // Color images stay mounted only long enough to fade out after leaving the gallery. Forgetting they
+  // loaded makes them start transparent when remounted, so the wipe plays again on the next visit.
   useEffect(() => {
     if (!colorFading) return
-    const timeout = window.setTimeout(() => setColorFading(false), COLOR_FADE_MS)
+    const timeout = window.setTimeout(() => {
+      setColorFading(false)
+      setColorLoaded(new Set())
+    }, COLOR_FADE_MS)
     return () => window.clearTimeout(timeout)
   }, [colorFading])
 
@@ -351,6 +362,15 @@ export function PhotoCollage({ photos, mode, hiddenId, onSelect }: PhotoCollageP
     const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)")
     let frame = 0
     let lastFrame = performance.now()
+    let appliedPosition = motionRef.current.position
+
+    // Holding still while a card has keyboard focus stops the drift carrying it off screen and unmounting it.
+    const keyboardFocusInside = () => {
+      const focused = document.activeElement
+      return (
+        focused instanceof HTMLElement && !!containerRef.current?.contains(focused) && focused.matches(":focus-visible")
+      )
+    }
 
     const tick = (now: number) => {
       const elapsed = Math.min(now - lastFrame, 50)
@@ -363,11 +383,14 @@ export function PhotoCollage({ photos, mode, hiddenId, onSelect }: PhotoCollageP
         motion.position += delta
         motion.pending = Math.abs(motion.pending - delta) < 0.5 ? 0 : motion.pending - delta
         motion.resumeAt = now + DRIFT_RESUME_DELAY_MS
-      } else if (now >= motion.resumeAt && !reducedMotion.matches) {
+      } else if (now >= motion.resumeAt && !reducedMotion.matches && !keyboardFocusInside()) {
         motion.position += (DRIFT_PX_PER_SECOND * elapsed) / 1000
       }
 
-      if (contentRef.current) contentRef.current.style.transform = `translate3d(0, ${-motion.position}px, 0)`
+      if (motion.position !== appliedPosition && contentRef.current) {
+        appliedPosition = motion.position
+        contentRef.current.style.transform = `translate3d(0, ${-motion.position}px, 0)`
+      }
       const row = Math.floor(motion.position / layoutRef.current.cellHeight)
       if (row !== windowRowRef.current) {
         windowRowRef.current = row
@@ -447,7 +470,13 @@ export function PhotoCollage({ photos, mode, hiddenId, onSelect }: PhotoCollageP
     }
   }, [gallery])
 
-  useEffect(() => () => observerRef.current?.disconnect(), [])
+  useEffect(
+    () => () => {
+      observerRef.current?.disconnect()
+      observerRef.current = null
+    },
+    [],
+  )
 
   // Fades cards in as they enter the screen during manual scrolling.
   const observeCard = useCallback((element: HTMLButtonElement | null) => {
@@ -480,6 +509,8 @@ export function PhotoCollage({ photos, mode, hiddenId, onSelect }: PhotoCollageP
   }, [layout, windowRow, viewport.height])
   const indexById = useMemo(() => new Map(photos.map((photo, index) => [photo.id, index])), [photos])
   const markLoaded = (src: string) => setLoaded((current) => (current.has(src) ? current : new Set(current).add(src)))
+  const markColorLoaded = (src: string) =>
+    setColorLoaded((current) => (current.has(src) ? current : new Set(current).add(src)))
 
   return (
     <div
@@ -505,7 +536,7 @@ export function PhotoCollage({ photos, mode, hiddenId, onSelect }: PhotoCollageP
               onFocus={(event) => revealCard(event.currentTarget)}
               onClick={(event) => onSelect?.(indexById.get(photo.id) ?? 0, placementOf(event.currentTarget))}
               className={cn(
-                "absolute overflow-hidden border-[6px] border-primary bg-black shadow-lg shadow-black/60 transition-[scale] duration-200 focus-visible:outline-2 focus-visible:outline-offset-2",
+                "absolute overflow-hidden border-4 border-primary bg-black shadow-lg shadow-black/60 transition-[scale] duration-200 focus-visible:outline-2 focus-visible:outline-offset-2 sm:border-[6px]",
                 gallery && "cursor-pointer hover:scale-105",
                 photo.id === hiddenId && "invisible",
               )}
@@ -532,10 +563,10 @@ export function PhotoCollage({ photos, mode, hiddenId, onSelect }: PhotoCollageP
                   width={photo.thumbnail.color.width}
                   height={photo.thumbnail.color.height}
                   decoding="async"
-                  onLoad={() => markLoaded(photo.thumbnail.color.src)}
+                  onLoad={() => markColorLoaded(photo.thumbnail.color.src)}
                   className={cn(
                     "absolute inset-0 size-full object-cover transition-opacity duration-700",
-                    colorShown && loaded.has(photo.thumbnail.color.src) ? "opacity-100" : "opacity-0",
+                    colorShown && colorLoaded.has(photo.thumbnail.color.src) ? "opacity-100" : "opacity-0",
                   )}
                   style={colorShown && colorPhase === "revealing" ? { transitionDelay: "var(--color-delay)" } : undefined}
                 />
