@@ -1,5 +1,5 @@
 import { useEffect, useLayoutEffect, useRef, useState, type RefObject } from "react"
-import { ChevronLeft, ChevronRight, X } from "lucide-react"
+import { ChevronLeft, ChevronRight, LoaderCircle, X } from "lucide-react"
 import { findPhotoPlacement, type PhotoPlacement } from "@/components/photo-collage"
 import type { BtsPhoto } from "@/lib/bts-photos"
 import { cn } from "@/lib/utils"
@@ -103,6 +103,16 @@ function LightboxFrame({
           originalLoaded ? "opacity-100" : "opacity-0",
         )}
       />
+      {!originalLoaded && (
+        // Delayed so cached originals don't flash the spinner.
+        <span
+          role="status"
+          aria-label="Loading full resolution photo"
+          className="absolute top-2 right-2 inline-flex size-8 items-center justify-center rounded-full bg-black/60 text-white animate-fade-in [animation-delay:300ms] [animation-fill-mode:backwards]"
+        >
+          <LoaderCircle aria-hidden className="size-5 animate-spin" />
+        </span>
+      )}
     </div>
   )
 }
