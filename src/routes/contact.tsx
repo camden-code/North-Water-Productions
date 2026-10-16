@@ -1,6 +1,6 @@
 import { Mail } from "lucide-react"
 
-const contactEmail = "camden.mknz@gmail.com"
+const contactEmail = "info@northwaterpictures.com"
 
 export function ContactPage() {
   return (
@@ -17,7 +17,6 @@ export function ContactPage() {
             <Mail aria-hidden className="size-5" />
             {contactEmail}
           </a>
-          <p className="mt-4 text-muted-foreground italic">All inquiries are coordinated by Camden McKenzie.</p>
         </div>
       </div>
     </section>
