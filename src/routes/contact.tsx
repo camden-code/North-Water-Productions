@@ -1,30 +1,26 @@
 import { Mail } from "lucide-react"
 
-const contactEmail = "camden.mknz@gmail.com"
+const contactEmail = "info@northwaterpictures.com"
 
 export function ContactPage() {
   return (
-    <section className="mx-auto flex w-full max-w-2xl flex-1 flex-col justify-center gap-6 py-12 text-center">
-      <h1 className="text-4xl font-bold tracking-tight sm:text-5xl">Contact Northwater Pictures</h1>
-      <div className="text-xl">
-        <div>
+    <section className="mx-auto w-full max-w-4xl space-y-10 pt-12 pb-28 motion-safe:animate-fade-in">
+      <div className="space-y-4">
+        <h1 className="text-4xl font-bold tracking-tight sm:text-5xl">Contact</h1>
+        <p className="text-xl">
           Questions, collaborations, or screenings?
-        </div>
-        <div>
-          Reach Northwater Pictures at the email below.
-        </div>
+          <br className="sm:hidden" /> We&apos;d love to hear from you. Reach out at the email below.
+        </p>
       </div>
-      <div className="rounded-xl border bg-card p-6">
+      <div className="rounded-lg border border-neutral-400/40 px-6 py-6 text-center">
+        <h2 className="text-xl font-bold tracking-tight">Northwater Pictures</h2>
         <a
           href={`mailto:${contactEmail}`}
-          className="mt-3 inline-flex items-center gap-2 text-xl text-primary underline-offset-4 hover:underline"
+          className="mt-2 inline-flex items-center gap-2 text-lg break-all text-primary underline-offset-4 hover:underline"
         >
-          <Mail aria-hidden className="size-5" />
+          <Mail aria-hidden className="size-4 shrink-0" />
           {contactEmail}
         </a>
-        <p className="mt-4 text-muted-foreground italic">
-          All inquiries are coordinated by Camden McKenzie.
-        </p>
       </div>
     </section>
   )
