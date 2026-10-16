@@ -22,6 +22,8 @@ type PlacedPhoto = {
   rotation: number
 }
 
+type ColorPhase = "bw" | "revealing" | "color"
+
 type CollageLayout = {
   photos: PlacedPhoto[]
   height: number
@@ -43,6 +45,13 @@ const MAX_ROTATION = 24
 const SKIP_CHANCE = 0.15
 const DRIFT_PX_PER_SECOND = 6
 const DRIFT_RESUME_DELAY_MS = 800
+const COLOR_WIPE_MS = 1400
+const COLOR_FADE_MS = 700
+const MAX_SCROLL_PX_PER_SECOND = 1200
+const SCROLL_EASE_MS = 80
+const TOUCH_MOMENTUM_MS = 250
+const TOUCH_VELOCITY_STALE_MS = 100
+const SCROLL_FADE_IN_MS = 600
 
 function seededRandom(seed: number): () => number {
   let state = seed
@@ -100,6 +109,14 @@ function buildLayout(photos: BtsPhoto[], viewportWidth: number, seed: number): C
   return { photos: placed, height: (cell / columns) * cellHeight }
 }
 
+function isOnScreen(rect: DOMRect): boolean {
+  return rect.bottom > 0 && rect.top < window.innerHeight && rect.right > 0 && rect.left < window.innerWidth
+}
+
+function clamp(value: number, min: number, max: number): number {
+  return Math.min(max, Math.max(min, value))
+}
+
 function placementOf(element: HTMLElement): PhotoPlacement {
   // The bounding rect of a rotated element is its axis-aligned bounds, but its center is unaffected.
   const rect = element.getBoundingClientRect()
@@ -121,9 +138,7 @@ export function findPhotoPlacement(id: string): PhotoPlacement | null {
 
   for (const element of document.querySelectorAll<HTMLElement>("[data-collage-photo]")) {
     if (element.dataset.collagePhoto !== id) continue
-    const rect = element.getBoundingClientRect()
-    const onScreen = rect.bottom > 0 && rect.top < window.innerHeight && rect.right > 0 && rect.left < window.innerWidth
-    if (!onScreen) continue
+    if (!isOnScreen(element.getBoundingClientRect())) continue
 
     const placement = placementOf(element)
     const distance = Math.hypot(placement.centerX - viewportCenterX, placement.centerY - viewportCenterY)
@@ -140,10 +155,13 @@ export function PhotoCollage({ photos, mode, hiddenId, onSelect }: PhotoCollageP
   const [seed] = useState(() => Math.floor(Math.random() * 2 ** 32))
   const [loaded, setLoaded] = useState<ReadonlySet<string>>(() => new Set())
   const [colorRequested, setColorRequested] = useState(false)
+  const [colorPhase, setColorPhase] = useState<ColorPhase>("bw")
   const scrollerRef = useRef<HTMLDivElement>(null)
   const resumeTimeoutRef = useRef<number | undefined>(undefined)
+  const userScrollingRef = useRef(false)
   const [scrolling, setScrolling] = useState(false)
   const gallery = mode === "gallery"
+  const colorShown = gallery && (colorPhase === "revealing" || colorPhase === "color")
 
   useEffect(() => {
     // Only react to width changes so mobile toolbars showing/hiding don't restart the drift.
@@ -155,9 +173,26 @@ export function PhotoCollage({ photos, mode, hiddenId, onSelect }: PhotoCollageP
     return () => window.removeEventListener("resize", resize)
   }, [])
 
-  useEffect(() => {
-    if (gallery) setColorRequested(true)
+  useLayoutEffect(() => {
+    if (!gallery) {
+      setColorPhase("bw")
+      return
+    }
+    // Delays each card by its height on screen so the color fades in from top to bottom.
+    for (const card of scrollerRef.current?.querySelectorAll<HTMLElement>("[data-collage-photo]") ?? []) {
+      const rect = card.getBoundingClientRect()
+      const position = clamp((rect.top + rect.height / 2) / window.innerHeight, 0, 1)
+      card.style.setProperty("--color-delay", `${Math.round(position * COLOR_WIPE_MS)}ms`)
+    }
+    setColorRequested(true)
+    setColorPhase("revealing")
   }, [gallery])
+
+  useEffect(() => {
+    if (colorPhase !== "revealing") return
+    const timeout = window.setTimeout(() => setColorPhase("color"), COLOR_WIPE_MS + COLOR_FADE_MS)
+    return () => window.clearTimeout(timeout)
+  }, [colorPhase])
 
   const layout = useMemo(() => buildLayout(photos, viewport.width, seed), [photos, viewport.width, seed])
   const indexById = useMemo(() => new Map(photos.map((photo, index) => [photo.id, index])), [photos])
@@ -177,12 +212,137 @@ export function PhotoCollage({ photos, mode, hiddenId, onSelect }: PhotoCollageP
 
   useEffect(() => () => window.clearTimeout(resumeTimeoutRef.current), [])
 
+  // Wheel and touch input is applied by hand so manual scrolling can be eased and speed capped.
+  useEffect(() => {
+    const scroller = scrollerRef.current
+    if (!scroller || !gallery) return
+    let pending = 0
+    let frame = 0
+    let lastFrame = 0
+    let touchY: number | null = null
+    let touchTime = 0
+    let touchVelocity = 0
+
+    const step = (now: number) => {
+      const elapsed = Math.min(now - lastFrame, 50)
+      lastFrame = now
+      const maxStep = (MAX_SCROLL_PX_PER_SECOND * elapsed) / 1000
+      const delta = clamp(pending * (1 - Math.exp(-elapsed / SCROLL_EASE_MS)), -maxStep, maxStep)
+      scroller.scrollTop += delta
+      pending -= delta
+      if (Math.abs(pending) < 0.5) {
+        pending = 0
+        frame = 0
+        return
+      }
+      frame = requestAnimationFrame(step)
+    }
+
+    const push = (delta: number) => {
+      const limit = scroller.clientHeight
+      pending = clamp(pending + delta, -limit, limit)
+      if (frame) return
+      lastFrame = performance.now()
+      frame = requestAnimationFrame(step)
+    }
+
+    const wheel = (event: WheelEvent) => {
+      if (event.ctrlKey) return
+      event.preventDefault()
+      const unit =
+        event.deltaMode === WheelEvent.DOM_DELTA_LINE
+          ? 16
+          : event.deltaMode === WheelEvent.DOM_DELTA_PAGE
+            ? scroller.clientHeight
+            : 1
+      push(event.deltaY * unit)
+    }
+
+    const touchstart = (event: TouchEvent) => {
+      if (event.touches.length !== 1) {
+        touchY = null
+        return
+      }
+      touchY = event.touches[0]!.clientY
+      touchTime = event.timeStamp
+      touchVelocity = 0
+      pending = 0
+    }
+
+    const touchmove = (event: TouchEvent) => {
+      if (touchY === null || event.touches.length !== 1) return
+      event.preventDefault()
+      const y = event.touches[0]!.clientY
+      const delta = touchY - y
+      touchVelocity = delta / Math.max(event.timeStamp - touchTime, 1)
+      touchY = y
+      touchTime = event.timeStamp
+      push(delta)
+    }
+
+    const touchend = (event: TouchEvent) => {
+      if (touchY === null) return
+      touchY = null
+      if (event.timeStamp - touchTime < TOUCH_VELOCITY_STALE_MS) push(touchVelocity * TOUCH_MOMENTUM_MS)
+    }
+
+    scroller.addEventListener("wheel", wheel, { passive: false })
+    scroller.addEventListener("touchstart", touchstart, { passive: true })
+    scroller.addEventListener("touchmove", touchmove, { passive: false })
+    scroller.addEventListener("touchend", touchend)
+    scroller.addEventListener("touchcancel", touchend)
+    return () => {
+      cancelAnimationFrame(frame)
+      scroller.removeEventListener("wheel", wheel)
+      scroller.removeEventListener("touchstart", touchstart)
+      scroller.removeEventListener("touchmove", touchmove)
+      scroller.removeEventListener("touchend", touchend)
+      scroller.removeEventListener("touchcancel", touchend)
+    }
+  }, [gallery])
+
+  // Fades photos in as they enter the screen during manual scrolling. Visibility is counted per layout
+  // position rather than per element, so the jump between identical copies when looping doesn't fade.
+  useEffect(() => {
+    const scroller = scrollerRef.current
+    if (!scroller || !gallery) return
+    const visible = new Set<Element>()
+    const visibleCounts = new Map<string, number>()
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        for (const { target, isIntersecting } of entries) {
+          if (!isIntersecting || visible.has(target)) continue
+          const key = (target as HTMLElement).dataset.collageKey ?? ""
+          const count = visibleCounts.get(key) ?? 0
+          visible.add(target)
+          visibleCounts.set(key, count + 1)
+          if (count === 0 && userScrollingRef.current) {
+            target.animate([{ opacity: 0 }, { opacity: 1 }], { duration: SCROLL_FADE_IN_MS, easing: "ease-out" })
+          }
+        }
+        for (const { target, isIntersecting } of entries) {
+          if (isIntersecting || !visible.delete(target)) continue
+          const key = (target as HTMLElement).dataset.collageKey ?? ""
+          visibleCounts.set(key, (visibleCounts.get(key) ?? 1) - 1)
+        }
+      },
+      { root: scroller },
+    )
+    for (const element of scroller.querySelectorAll("[data-collage-key]")) observer.observe(element)
+    return () => observer.disconnect()
+  }, [gallery, layout, copies])
+
   const handleScroll = () => {
     wrapScroll()
     if (!gallery) return
+    userScrollingRef.current = true
     setScrolling(true)
     window.clearTimeout(resumeTimeoutRef.current)
-    resumeTimeoutRef.current = window.setTimeout(() => setScrolling(false), DRIFT_RESUME_DELAY_MS)
+    resumeTimeoutRef.current = window.setTimeout(() => {
+      userScrollingRef.current = false
+      setScrolling(false)
+    }, DRIFT_RESUME_DELAY_MS)
   }
 
   const markLoaded = (src: string) => setLoaded((current) => (current.has(src) ? current : new Set(current).add(src)))
@@ -220,6 +380,7 @@ export function PhotoCollage({ photos, mode, hiddenId, onSelect }: PhotoCollageP
                   tabIndex={copy === 1 ? undefined : -1}
                   aria-label="View photo"
                   data-collage-photo={photo.id}
+                  data-collage-key={key}
                   data-rotation={rotation}
                   onClick={(event) => onSelect?.(indexById.get(photo.id) ?? 0, placementOf(event.currentTarget))}
                   className={cn(
@@ -238,8 +399,10 @@ export function PhotoCollage({ photos, mode, hiddenId, onSelect }: PhotoCollageP
                     decoding="async"
                     onLoad={() => markLoaded(photo.thumbnail.bw.src)}
                     className={cn(
-                      "absolute inset-0 size-full object-cover transition-opacity duration-1000",
-                      loaded.has(photo.thumbnail.bw.src) ? "opacity-100" : "opacity-0",
+                      "absolute inset-0 size-full object-cover [transition:opacity_1s_ease-out,filter_3s_ease-out]",
+                      loaded.has(photo.thumbnail.bw.src)
+                        ? "opacity-100 filter-none"
+                        : "opacity-0 blur-[1px] brightness-[.35] contrast-[.6] sepia-[.7]",
                     )}
                   />
                   {colorRequested && (
@@ -253,8 +416,9 @@ export function PhotoCollage({ photos, mode, hiddenId, onSelect }: PhotoCollageP
                       onLoad={() => markLoaded(photo.thumbnail.color.src)}
                       className={cn(
                         "absolute inset-0 size-full object-cover transition-opacity duration-700",
-                        gallery && loaded.has(photo.thumbnail.color.src) ? "opacity-100" : "opacity-0",
+                        colorShown && loaded.has(photo.thumbnail.color.src) ? "opacity-100" : "opacity-0",
                       )}
+                      style={colorShown && colorPhase === "revealing" ? { transitionDelay: "var(--color-delay)" } : undefined}
                     />
                   )}
                 </button>
