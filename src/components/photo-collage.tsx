@@ -223,7 +223,7 @@ export function PhotoCollage({ photos, mode, hiddenId, onSelect }: PhotoCollageP
                   data-rotation={rotation}
                   onClick={(event) => onSelect?.(indexById.get(photo.id) ?? 0, placementOf(event.currentTarget))}
                   className={cn(
-                    "absolute overflow-hidden border-[6px] border-white bg-white shadow-lg shadow-black/60 transition-[scale] duration-200 focus-visible:outline-2 focus-visible:outline-offset-2",
+                    "absolute overflow-hidden border-[6px] border-white bg-black shadow-lg shadow-black/60 transition-[scale] duration-200 focus-visible:outline-2 focus-visible:outline-offset-2",
                     gallery && "cursor-pointer hover:scale-105",
                     photo.id === hiddenId && "invisible",
                   )}
