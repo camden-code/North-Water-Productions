@@ -360,7 +360,7 @@ export function PhotoCollage({ photos, mode, hiddenId, onSelect }: PhotoCollageP
       {layout.height > 0 && (
         <div
           className={cn(
-            "animate-collage-drift will-change-transform motion-reduce:animate-none",
+            "animate-collage-drift motion-reduce:animate-none",
             gallery && scrolling && "[animation-play-state:paused]",
           )}
           style={
@@ -399,10 +399,8 @@ export function PhotoCollage({ photos, mode, hiddenId, onSelect }: PhotoCollageP
                     decoding="async"
                     onLoad={() => markLoaded(photo.thumbnail.bw.src)}
                     className={cn(
-                      "absolute inset-0 size-full object-cover [transition:opacity_1s_ease-out,filter_3s_ease-out]",
-                      loaded.has(photo.thumbnail.bw.src)
-                        ? "opacity-100 filter-none"
-                        : "opacity-0 blur-[1px] brightness-[.35] contrast-[.6] sepia-[.7]",
+                      "absolute inset-0 size-full object-cover transition-opacity duration-1000 ease-out",
+                      loaded.has(photo.thumbnail.bw.src) ? "opacity-100" : "opacity-0",
                     )}
                   />
                   {colorRequested && (
