@@ -15,6 +15,10 @@ Static landing page for Northwater Pictures. React + TypeScript + Vite + Tailwin
 - `src/lib/` – utilities. `src/styles/` – global CSS and theme tokens.
 - Import with the `@/` alias.
 
+## Design
+
+Read `design.md` before any visual or UI work. It defines the palette, typography, layout, signature motifs, motion rules and voice. Keep it up to date when the design system changes.
+
 ## Code conventions
 
 - Minimal comments. Only comment when the code isn't self-explanatory.
