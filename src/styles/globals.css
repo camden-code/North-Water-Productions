@@ -67,7 +67,6 @@
 
   --animate-collapsible-down: collapsible-down 200ms ease-out;
   --animate-collapsible-up: collapsible-up 200ms ease-out;
-  --animate-collage-drift: collage-drift 60s linear infinite;
   --animate-fade-in: fade-in 300ms ease-out;
   --animate-crt-flicker: crt-flicker 6s steps(1) infinite;
   --animate-film-burn: film-burn 7s ease-in-out infinite alternate;
@@ -92,12 +91,6 @@
   @keyframes fade-in {
     from {
       opacity: 0;
-    }
-  }
-
-  @keyframes collage-drift {
-    to {
-      transform: translate3d(0, calc(-1 * var(--collage-height)), 0);
     }
   }
 
