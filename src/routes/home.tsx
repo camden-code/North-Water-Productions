@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react"
 import { FilmCard } from "@/components/film-card"
 import { FloatingQuotes } from "@/components/floating-quotes"
-import { RotatingQuote } from "@/components/rotating-quote"
 import { films } from "@/lib/films"
 
 const firstFlippableSlug = films.find((film) => film.release.kind !== "upcoming")?.slug
@@ -41,7 +40,6 @@ export function HomePage() {
           <h1 className="text-5xl sm:text-6xl">Northwater Pictures</h1>
           <p className="mt-2 text-xl text-muted-foreground">Films by Xavier Gamache</p>
         </div>
-        <RotatingQuote className="min-[1800px]:hidden" />
       </div>
       <div className="grid items-start gap-6 sm:grid-cols-2 lg:grid-cols-3">
         {films.map((film) => (
