@@ -26,7 +26,7 @@ type Tilt = { x: number; y: number }
 const linkClass = "inline-flex items-center gap-1.5"
 
 const tvScreenClass =
-  "relative overflow-hidden rounded-2xl border-8 border-[#050a0c] bg-card shadow-[inset_0_0_2.5rem_rgb(0_0_0/0.75),0_0_0_1px_var(--border)]"
+  "relative overflow-hidden rounded-2xl border-8 border-[#050a0c] bg-card shadow-[inset_0_0_2.5rem_rgb(0_0_0/0.75)]"
 
 function TvStatic() {
   return (
