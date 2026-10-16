@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef } from "react"
-import { quotes } from "@/lib/quotes"
+import { quotes, type Quote } from "@/lib/quotes"
 
 type FloatingItem =
   | { kind: "quote"; text: string; author: string }
@@ -18,17 +18,38 @@ const DRIFT_PX_PER_SECOND = 25
 const INTRO_SECONDS = 2.5
 const INTRO_SOFTNESS = 200
 
+// Prefers authors with the most quotes left so they get spread out before the pool runs dry.
+function pickQuote(remaining: Quote[], avoid: ReadonlySet<string | undefined>): Quote | undefined {
+  const counts = new Map<string, number>()
+  remaining.forEach((quote) => counts.set(quote.author, (counts.get(quote.author) ?? 0) + 1))
+  return remaining
+    .filter((quote) => !avoid.has(quote.author))
+    .reduce<Quote | undefined>(
+      (best, quote) => (best && counts.get(best.author)! >= counts.get(quote.author)! ? best : quote),
+      undefined,
+    )
+}
+
 function buildSides(): Record<Side, FloatingItem[]> {
   const sides: Record<Side, FloatingItem[]> = { left: [], right: [] }
-  let placed = 0
-  quotes.forEach((quote) => {
-    placed += 1
+  const authors: Record<Side, string[]> = { left: [], right: [] }
+  const perSide: Record<Side, number> = { left: Math.ceil(quotes.length / 2), right: Math.floor(quotes.length / 2) }
+  const remaining = [...quotes]
+  for (let placed = 1; remaining.length > 0; placed++) {
     const side: Side = placed % 2 === 0 ? "right" : "left"
+    const other: Side = side === "left" ? "right" : "left"
+    const column = authors[side]
+    const avoid = new Set([column.at(-1), authors[other].at(-1)])
+    // Columns loop, so the last quote also sits next to the first.
+    if (column.length === perSide[side] - 1) avoid.add(column[0])
+    const quote = pickQuote(remaining, avoid) ?? pickQuote(remaining, new Set([column.at(-1)])) ?? remaining[0]!
+    remaining.splice(remaining.indexOf(quote), 1)
+    column.push(quote.author)
     sides[side].push({ kind: "quote", text: quote.text, author: quote.author })
     if (placed % HASHTAG_EVERY === 0) {
-      sides[side === "left" ? "right" : "left"].push({ kind: "tag", text: HASHTAG })
+      sides[other].push({ kind: "tag", text: HASHTAG })
     }
-  })
+  }
   return sides
 }
 
