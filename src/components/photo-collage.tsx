@@ -193,8 +193,8 @@ export function PhotoCollage({ photos, mode, hiddenId, onSelect }: PhotoCollageP
       aria-hidden={!gallery}
       onScroll={handleScroll}
       className={cn(
-        "absolute inset-0 overscroll-contain transition-opacity duration-700 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden",
-        gallery ? "overflow-y-auto opacity-100" : "pointer-events-none overflow-hidden opacity-15",
+        "absolute inset-0 overflow-x-hidden overflow-y-auto overscroll-contain transition-opacity duration-700 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden",
+        gallery ? "opacity-100" : "pointer-events-none opacity-15",
       )}
     >
       {layout.height > 0 && (
