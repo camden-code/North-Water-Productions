@@ -1,25 +1,20 @@
-import { useEffect, useRef, type ReactNode } from "react"
-import { Link, ScrollRestoration } from "react-router"
+import { useEffect, useRef, type MouseEvent, type ReactNode } from "react"
+import { Link, ScrollRestoration, useLocation, useNavigate } from "react-router"
 import { ArrowLeft, Music, Play, Ticket } from "lucide-react"
 import { siLetterboxd, siSpotify } from "simple-icons"
-import { films } from "@/lib/films"
+import { BrandIcon } from "@/components/profile-link-icon"
+import { films, posterTransitionName } from "@/lib/films"
 import { tinyHatManCast, tinyHatManCrew, tinyHatManLinks, type TinyHatManLink } from "@/lib/tiny-hat-man"
 import "@/styles/tiny-hat-man.css"
 
-const posterUrl = films.find((film) => film.slug === "death-of-a-tiny-hat-man")?.posterUrl
-const backdropUrl = `${import.meta.env.BASE_URL}films/death-of-a-tiny-hat-man-backdrop.webp`
-
-function BrandIcon({ path }: { path: string }) {
-  return (
-    <svg aria-hidden viewBox="0 0 24 24" fill="currentColor" className="thm-link-icon">
-      <path d={path} />
-    </svg>
-  )
-}
+const slug = "death-of-a-tiny-hat-man"
+const posterUrl = films.find((film) => film.slug === slug)?.posterUrl
+const backdropUrl = `${import.meta.env.BASE_URL}films/${slug}-backdrop.webp`
+const fontsUrl = "https://fonts.googleapis.com/css2?family=Covered+By+Your+Grace&family=Lacquer&display=swap"
 
 const linkIcons: Record<TinyHatManLink["label"], ReactNode> = {
-  Letterboxd: <BrandIcon path={siLetterboxd.path} />,
-  Spotify: <BrandIcon path={siSpotify.path} />,
+  Letterboxd: <BrandIcon path={siLetterboxd.path} className="thm-link-icon" />,
+  Spotify: <BrandIcon path={siSpotify.path} className="thm-link-icon" />,
   Soundtrack: <Music aria-hidden className="thm-link-icon" />,
   Trailer: <Play aria-hidden className="thm-link-icon" />,
   Fandango: <Ticket aria-hidden className="thm-link-icon" />,
@@ -38,6 +33,15 @@ function TitleWords() {
 export function TinyHatManPage() {
   const pageRef = useRef<HTMLDivElement>(null)
   const titleRef = useRef<HTMLElement>(null)
+  const location = useLocation()
+  const navigate = useNavigate()
+
+  // Goes back in history when the visitor came from within the site, so the home page keeps its scroll position.
+  const goBack = (event: MouseEvent<HTMLAnchorElement>) => {
+    if (location.key === "default") return
+    event.preventDefault()
+    navigate(-1)
+  }
 
   useEffect(() => {
     let frame = 0
@@ -64,8 +68,9 @@ export function TinyHatManPage() {
   return (
     <div ref={pageRef} className="thm">
       <title>Death of a Tiny Hat Man | Northwater Pictures</title>
+      <link rel="stylesheet" href={fontsUrl} precedence="default" />
       <div className="thm-bar">
-        <Link to="/" aria-label="Back to Northwater Pictures" className="thm-back">
+        <Link to="/" viewTransition onClick={goBack} aria-label="Back to Northwater Pictures" className="thm-back">
           <ArrowLeft aria-hidden />
         </Link>
         <p aria-hidden className="thm-bar-title">
@@ -81,7 +86,12 @@ export function TinyHatManPage() {
 
       <main className="thm-main">
         {posterUrl && (
-          <img src={posterUrl} alt="Death of a Tiny Hat Man poster" className="thm-poster" />
+          <img
+            src={posterUrl}
+            alt="Death of a Tiny Hat Man poster"
+            style={{ viewTransitionName: posterTransitionName(slug) }}
+            className="thm-poster"
+          />
         )}
 
         <nav aria-label="Watch and listen" className="thm-links">

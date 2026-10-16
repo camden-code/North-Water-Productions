@@ -378,13 +378,13 @@ export function PhotoCollage({ photos, mode, hiddenId, onSelect }: PhotoCollageP
                   type="button"
                   disabled={!gallery}
                   tabIndex={copy === 1 ? undefined : -1}
-                  aria-label="View photo"
+                  aria-label={`Behind-the-scenes photo ${(indexById.get(photo.id) ?? 0) + 1} of ${photos.length}`}
                   data-collage-photo={photo.id}
                   data-collage-key={key}
                   data-rotation={rotation}
                   onClick={(event) => onSelect?.(indexById.get(photo.id) ?? 0, placementOf(event.currentTarget))}
                   className={cn(
-                    "absolute overflow-hidden border-[6px] border-white bg-black shadow-lg shadow-black/60 transition-[scale] duration-200 focus-visible:outline-2 focus-visible:outline-offset-2",
+                    "absolute overflow-hidden border-[6px] border-primary bg-black shadow-lg shadow-black/60 transition-[scale] duration-200 focus-visible:outline-2 focus-visible:outline-offset-2",
                     gallery && "cursor-pointer hover:scale-105",
                     photo.id === hiddenId && "invisible",
                   )}

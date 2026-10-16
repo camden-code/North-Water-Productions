@@ -19,6 +19,8 @@ export type Film = {
   pagePath?: string
 }
 
+const poster = (slug: string): string => `${import.meta.env.BASE_URL}films/${slug}.webp`
+
 export const films: Film[] = [
   {
     slug: "alien-mind-beam",
@@ -31,8 +33,7 @@ export const films: Film[] = [
     title: "Death of a Tiny Hat Man",
     release: { kind: "date", date: "2025-11-22" },
     pagePath: "/tinyhatman",
-    posterUrl:
-      "https://a.ltrbxd.com/resized/film-poster/1/4/2/0/9/7/0/1420970-death-of-a-tiny-hat-man-0-600-0-900-crop.jpg?v=154c28cf94",
+    posterUrl: poster("death-of-a-tiny-hat-man"),
     description:
       "After the death of a once-great film director. Two fanatics seek to restore his last unreleased film and get revenge on the man who canceled it. Meanwhile, two detectives are on the case.",
     quote: { text: "…a well-paced action film with a clear artistic thesis that positions Gamache as a local filmmaker to watch.", author: "The Maine Playweek" },
@@ -44,8 +45,7 @@ export const films: Film[] = [
     slug: "feel-good-hotline",
     title: "Feel Good Hotline",
     release: { kind: "date", date: "2025-03-13" },
-    posterUrl:
-      "https://a.ltrbxd.com/resized/film-poster/1/3/2/5/4/0/7/1325407-feel-good-hotline-1-0-600-0-900-crop.jpg?v=e2209c2cda",
+    posterUrl: poster("feel-good-hotline"),
     description:
       "In this dark thriller, three individuals, each with their own painful past, are drawn together by a series of mysterious events that lead them to a common target: the man who wronged them.",
     quote: { text: "Truly a film without ‘filler’.", author: "comrade_yui" },
@@ -56,7 +56,7 @@ export const films: Film[] = [
     slug: "daemon",
     title: "DAEMON",
     release: { kind: "year", year: 2024 },
-    posterUrl: "https://a.ltrbxd.com/resized/film-poster/1/1/1/8/4/6/9/1118469-daemon-0-600-0-900-crop.jpg?v=97ff374d5c",
+    posterUrl: poster("daemon"),
     description:
       "An internet “faith healer” is hired to do an exorcism on a teenage boy, leading him to question his faith and reality itself.",
     letterboxdUrl: "https://letterboxd.com/film/daemon-1/",
@@ -65,7 +65,7 @@ export const films: Film[] = [
     slug: "pumpkin-boys-daydream",
     title: "Pumpkin Boy's Daydream",
     release: { kind: "date", date: "2026-09-26" },
-    posterUrl: `${import.meta.env.BASE_URL}films/pumpkin-boys-daydream.png`,
+    posterUrl: poster("pumpkin-boys-daydream"),
     description: "",
     watchUrl: "https://www.youtube.com/watch?v=IcG0LNFjZM0",
   },
@@ -73,7 +73,7 @@ export const films: Film[] = [
     slug: "i-feel-better-now",
     title: "I Feel Better Now",
     release: { kind: "year", year: 2020 },
-    posterUrl: "https://a.ltrbxd.com/resized/film-poster/6/5/1/6/7/9/651679-i-feel-better-now-0-600-0-900-crop.jpg?v=ee769ce02a",
+    posterUrl: poster("i-feel-better-now"),
     description: "A paranoid young man deals with a secret hiding in his closet.",
     letterboxdUrl: "https://letterboxd.com/film/i-feel-better-now/",
     watchUrl: "https://youtu.be/BEiP9alSraU",
@@ -82,12 +82,16 @@ export const films: Film[] = [
     slug: "last-slice",
     title: "Last Slice",
     release: { kind: "date", date: "2020-04-13" },
-    posterUrl: "https://a.ltrbxd.com/resized/film-poster/6/1/8/0/9/9/618099-last-slice-0-600-0-900-crop.jpg?v=0c34fdf490",
+    posterUrl: poster("last-slice"),
     description: "Low budget, Horror, Comedy short film.",
     letterboxdUrl: "https://letterboxd.com/film/last-slice/",
     watchUrl: "https://www.youtube.com/watch?v=jrs-mywqxro",
   },
 ]
+
+export function posterTransitionName(slug: string): string {
+  return `poster-${slug}`
+}
 
 export function formatRelease(release: FilmRelease): string {
   if (release.kind === "upcoming") return "Releasing 2026"

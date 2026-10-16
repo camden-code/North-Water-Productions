@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import { Link, NavLink } from "react-router"
 import { Menu, X } from "lucide-react"
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible"
@@ -10,21 +10,45 @@ type NavItem = {
 }
 
 const navItems: NavItem[] = [
-  { to: "/about", label: "About Us" },
+  { to: "/about", label: "About Us" },
   { to: "/contact", label: "Contact" },
 ]
 
 export function SiteHeader() {
   const [open, setOpen] = useState(false)
+  const headerRef = useRef<HTMLElement>(null)
+
+  useEffect(() => {
+    if (!open) return
+    const keydown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setOpen(false)
+    }
+    const pointerdown = (event: PointerEvent) => {
+      if (event.target instanceof Node && !headerRef.current?.contains(event.target)) setOpen(false)
+    }
+    window.addEventListener("keydown", keydown)
+    document.addEventListener("pointerdown", pointerdown)
+    return () => {
+      window.removeEventListener("keydown", keydown)
+      document.removeEventListener("pointerdown", pointerdown)
+    }
+  }, [open])
 
   return (
     <>
       {/* Fixed rather than sticky so it doesn't move when the document height or scroll position jumps (e.g. on iOS). */}
-      <div aria-hidden="true" className="h-20 shrink-0 sm:h-16" />
-      <header className="fixed inset-x-0 top-0 z-50 h-20 border-b border-neutral-400 bg-background/80 backdrop-blur sm:h-16">
+      <div aria-hidden="true" className="h-16 shrink-0" />
+      <header
+        ref={headerRef}
+        className="fixed inset-x-0 top-0 z-(--z-header) h-16 border-b bg-background/80 backdrop-blur"
+      >
         <Collapsible open={open} onOpenChange={setOpen} className="h-full">
           <div className="mx-auto flex h-full max-w-6xl items-center justify-between gap-4 px-6">
-            <Link to="/" onClick={() => setOpen(false)} className="font-heading text-xl font-bold tracking-tight whitespace-nowrap">
+            <Link
+              to="/"
+              onClick={() => setOpen(false)}
+              className="font-heading text-3xl tracking-wide whitespace-nowrap uppercase"
+            >
               Northwater&nbsp;Pictures
             </Link>
             <nav className="hidden items-center gap-6 sm:flex">
@@ -33,7 +57,10 @@ export function SiteHeader() {
                   key={item.to}
                   to={item.to}
                   className={({ isActive }) =>
-                    cn("text-base transition-colors hover:text-foreground", isActive ? "text-foreground underline" : "text-muted-foreground")
+                    cn(
+                      "text-base underline-offset-4 transition-colors hover:text-foreground",
+                      isActive ? "text-foreground underline decoration-accent" : "text-muted-foreground",
+                    )
                   }
                 >
                   {item.label}
@@ -50,8 +77,8 @@ export function SiteHeader() {
               </button>
             </CollapsibleTrigger>
           </div>
-          <CollapsibleContent className="overflow-hidden data-[state=closed]:animate-collapsible-up data-[state=open]:animate-collapsible-down motion-reduce:animate-none sm:hidden absolute right-0 w-xs shadow-xl">
-            <nav className="flex flex-col border rounded-b mr-2 border-neutral-200 bg-neutral-950/90 backdrop-blur">
+          <CollapsibleContent className="absolute right-0 w-xs overflow-hidden shadow-xl data-[state=closed]:animate-collapsible-up data-[state=open]:animate-collapsible-down motion-reduce:animate-none sm:hidden">
+            <nav className="mr-2 flex flex-col rounded-b border bg-card/95 backdrop-blur">
               {navItems.map((item) => (
                 <NavLink
                   key={item.to}
@@ -59,8 +86,8 @@ export function SiteHeader() {
                   onClick={() => setOpen(false)}
                   className={({ isActive }) =>
                     cn(
-                      "border-b border-neutral-200 px-6 py-4 text-xl text-foreground transition-colors last:border-b-0 hover:bg-neutral-800/90 active:bg-neutral-900/90",
-                      isActive && "font-semibold bg-neutral-900/90 underline",
+                      "border-b px-6 py-4 text-xl text-foreground underline-offset-4 transition-colors last:border-b-0 hover:bg-background/60",
+                      isActive && "font-bold underline decoration-accent",
                     )
                   }
                 >

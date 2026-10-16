@@ -2,10 +2,10 @@ import { useRef, useState, type PointerEvent } from "react"
 import { flushSync } from "react-dom"
 import { Link } from "react-router"
 import { ArrowRight, Film as FilmIcon, Music, Play, X } from "lucide-react"
+import { ExternalLink } from "@/components/external-link"
 import { ProfileLinkIcon } from "@/components/profile-link-icon"
-import { formatRelease, type Film } from "@/lib/films"
+import { formatRelease, posterTransitionName, type Film } from "@/lib/films"
 import { cn } from "@/lib/utils"
-import { ExternalLink } from "./external-link"
 
 type FilmCardProps = {
   film: Film
@@ -23,12 +23,50 @@ type Tilt = { x: number; y: number }
 
 const linkClass = "inline-flex items-center gap-1.5"
 
+const tvScreenClass =
+  "relative overflow-hidden rounded-2xl border-8 border-[#050a0c] bg-card shadow-[inset_0_0_2.5rem_rgb(0_0_0/0.75),0_0_0_1px_var(--border)]"
+
+function TvStatic() {
+  return (
+    <div aria-hidden="true" className="pointer-events-none absolute inset-0">
+      <div className="absolute inset-0 scanlines motion-safe:animate-scanline-crawl" />
+      <div className="absolute inset-x-0 top-0 crt-roll motion-safe:animate-crt-roll motion-reduce:hidden" />
+    </div>
+  )
+}
+
+function UpcomingFilm({ film, release }: { film: Film; release: string }) {
+  return (
+    <>
+      <article className={cn(tvScreenClass, "flex items-center gap-4 p-4 sm:hidden")}>
+        <FilmIcon aria-hidden className="size-6 shrink-0 text-muted-foreground" />
+        <div className="motion-safe:animate-crt-flicker">
+          <h2 className="text-2xl">{film.title}</h2>
+          <p className="text-muted-foreground">{release}</p>
+        </div>
+        <TvStatic />
+      </article>
+      <article className={cn(tvScreenClass, "hidden aspect-[2/3] sm:block")}>
+        {film.posterUrl ? (
+          <img src={film.posterUrl} alt={film.title} loading="lazy" className="size-full object-cover" />
+        ) : (
+          <div className="flex size-full flex-col items-center justify-center gap-3 p-6 text-center motion-safe:animate-crt-flicker">
+            <FilmIcon aria-hidden className="size-10 text-muted-foreground" />
+            <h2 className="text-4xl">{film.title}</h2>
+            <p className="text-muted-foreground">{release}</p>
+          </div>
+        )}
+        <TvStatic />
+      </article>
+    </>
+  )
+}
+
 export function FilmCard({ film, flipped, onFlip, onUnflip }: FilmCardProps) {
   const release = formatRelease(film.release)
   const [tilt, setTilt] = useState<Tilt | null>(null)
   const [settling, setSettling] = useState(false)
   const frontRef = useRef<HTMLButtonElement>(null)
-  const upcoming = film.release.kind === "upcoming"
 
   const unflip = () => {
     flushSync(() => {
@@ -49,38 +87,15 @@ export function FilmCard({ film, flipped, onFlip, onUnflip }: FilmCardProps) {
     })
   }
 
-  // Upcoming film - Cannot be flipped, and changes size on mobile
-  if (upcoming) {
-    return (
-      <>
-        <article className="flex items-center gap-4 rounded-xl bg-primary-200 p-4 text-primary-900 shadow-sm sm:hidden">
-          <FilmIcon aria-hidden className="size-6 shrink-0" />
-          <div>
-            <h2 className="text-lg leading-tight font-bold text-foreground">{film.title}</h2>
-            <p>{release}</p>
-          </div>
-        </article>
-        <article className="hidden aspect-[2/3] overflow-hidden rounded-xl bg-primary-100 shadow-sm sm:block">
-          {film.posterUrl ? (
-            <img src={film.posterUrl} alt={film.title} loading="lazy" className="size-full object-cover" />
-          ) : (
-            <div className="flex size-full flex-col items-center justify-center gap-3 p-6 text-center text-primary-800">
-              <FilmIcon aria-hidden className="size-10" />
-              <h2 className="text-2xl font-bold text-foreground">{film.title}</h2>
-              <p>{release}</p>
-            </div>
-          )}
-        </article>
-      </>
-    )
-  }
+  // Upcoming films can't be flipped.
+  if (film.release.kind === "upcoming") return <UpcomingFilm film={film} release={release} />
 
-  // Normal film card
   return (
     <article
       data-film-card={film.slug}
       onPointerMove={handlePointerMove}
       onPointerLeave={() => setTilt(null)}
+      style={film.pagePath ? { viewTransitionName: posterTransitionName(film.slug) } : undefined}
       className="aspect-[2/3] perspective-distant"
     >
       <div
@@ -95,7 +110,6 @@ export function FilmCard({ film, flipped, onFlip, onUnflip }: FilmCardProps) {
           flipped && "rotate-y-180",
         )}
       >
-
         {/* Front */}
         <button
           ref={frontRef}
@@ -103,28 +117,43 @@ export function FilmCard({ film, flipped, onFlip, onUnflip }: FilmCardProps) {
           onClick={onFlip}
           inert={flipped}
           aria-label={`${film.title}, ${release}. Show details`}
-          className="absolute inset-0 cursor-pointer overflow-hidden rounded-xl bg-muted shadow-sm translate-z-px backface-hidden focus-visible:outline-2 focus-visible:outline-offset-2"
+          className="group absolute inset-0 cursor-pointer overflow-hidden rounded-xl bg-muted shadow-sm translate-z-px backface-hidden focus-visible:outline-2 focus-visible:outline-offset-2"
         >
           {film.posterUrl ? (
-            <img
-              src={film.posterUrl}
-              alt=""
-              loading="lazy"
-              className="size-full object-cover backface-hidden"
-            />
+            <img src={film.posterUrl} alt="" loading="lazy" className="size-full object-cover backface-hidden" />
           ) : (
             <div className="flex size-full flex-col items-center justify-center gap-3 p-6 text-center text-muted-foreground">
               <FilmIcon aria-hidden className="size-10" />
-              <span className="text-2xl font-bold text-foreground">{film.title}</span>
+              <span className="font-heading text-4xl tracking-wide text-foreground uppercase">{film.title}</span>
               <span>{release}</span>
             </div>
           )}
           {film.quote && (
             <figure className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/90 via-black/70 to-transparent px-4 pt-12 pb-4 text-left text-white">
-              <blockquote className="text-lg leading-snug font-semibold italic">“{film.quote.text}”</blockquote>
-              <figcaption className="mt-1 text-sm text-white/70">— {film.quote.author}</figcaption>
+              <blockquote className="text-lg leading-snug italic">“{film.quote.text}”</blockquote>
+              <figcaption className="mt-1 text-sm text-white/70">{film.quote.author}</figcaption>
             </figure>
           )}
+          <span
+            aria-hidden="true"
+            className="absolute top-3 right-3 rounded-full bg-black/60 px-3 py-1 text-sm text-white backdrop-blur"
+          >
+            Details
+          </span>
+          <span
+            aria-hidden="true"
+            className={cn(
+              "pointer-events-none absolute inset-0 transition-opacity duration-300",
+              tilt && !flipped ? "opacity-100" : "opacity-0",
+            )}
+            style={
+              tilt
+                ? {
+                    background: `radial-gradient(circle at ${(tilt.x + 1) * 50}% ${(tilt.y + 1) * 50}%, rgb(255 255 255 / 0.07), transparent 70%)`,
+                  }
+                : undefined
+            }
+          />
         </button>
 
         {/* Back */}
@@ -141,13 +170,14 @@ export function FilmCard({ film, flipped, onFlip, onUnflip }: FilmCardProps) {
             <X aria-hidden className="size-5" />
           </button>
           <header className="pr-8">
-            <h2 className="text-xl leading-tight font-bold">{film.title}</h2>
+            <h2 className="text-3xl">{film.title}</h2>
             <p className="text-muted-foreground">{release}</p>
           </header>
           <p className="mt-4 flex-1 overflow-y-auto">{film.description}</p>
           {film.pagePath && (
             <Link
               to={film.pagePath}
+              viewTransition
               className="mt-4 inline-flex items-center gap-2 self-center rounded-full bg-primary px-5 py-2 font-bold text-primary-foreground transition-opacity hover:opacity-90 focus-visible:outline-2 focus-visible:outline-offset-2"
             >
               Film page
@@ -182,6 +212,6 @@ export function FilmCard({ film, flipped, onFlip, onUnflip }: FilmCardProps) {
           </footer>
         </div>
       </div>
-    </article >
+    </article>
   )
 }

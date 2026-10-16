@@ -104,6 +104,8 @@
   flex-direction: column;
   align-items: center;
   line-height: 0.9;
+  letter-spacing: normal;
+  text-transform: none;
   transform-origin: top center;
   transform: translateY(calc(var(--thm-scroll, 0) * -2rem)) scale(calc(1 - var(--thm-scroll, 0) * 0.35));
   opacity: calc(1 - var(--thm-scroll, 0));
@@ -192,6 +194,7 @@
   font-family: "Covered By Your Grace", cursive;
   font-size: clamp(2.5rem, 9vw, 4rem);
   line-height: 1;
+  letter-spacing: normal;
   text-transform: uppercase;
 }
 
