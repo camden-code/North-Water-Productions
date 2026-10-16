@@ -1,5 +1,5 @@
 import { useEffect, useLayoutEffect, useRef, useState, type RefObject } from "react"
-import { ChevronLeft, ChevronRight, X } from "lucide-react"
+import { ChevronLeft, ChevronRight, LoaderCircle, X } from "lucide-react"
 import { findPhotoPlacement, type PhotoPlacement } from "@/components/photo-collage"
 import type { BtsPhoto } from "@/lib/bts-photos"
 import { cn } from "@/lib/utils"
@@ -23,6 +23,8 @@ const EASING = "cubic-bezier(0.2, 0.8, 0.2, 1)"
 const SIDE_MARGIN = 16
 const TOP_MARGIN = 72
 const BOTTOM_MARGIN = 88
+// Below this height, such as on landscape phones, the photo fills the screen and the controls float over it.
+const COMPACT_HEIGHT = 520
 
 function prefersReducedMotion(): boolean {
   return window.matchMedia("(prefers-reduced-motion: reduce)").matches
@@ -30,12 +32,15 @@ function prefersReducedMotion(): boolean {
 
 function fitPlacement(photo: BtsPhoto, viewport: Viewport): PhotoPlacement {
   const { width, height } = photo.original
+  const compact = viewport.height < COMPACT_HEIGHT
+  const top = compact ? SIDE_MARGIN : TOP_MARGIN
+  const bottom = compact ? SIDE_MARGIN : BOTTOM_MARGIN
   const maxWidth = viewport.width - SIDE_MARGIN * 2
-  const maxHeight = viewport.height - TOP_MARGIN - BOTTOM_MARGIN
+  const maxHeight = viewport.height - top - bottom
   const scale = Math.min(maxWidth / width, maxHeight / height)
   return {
     centerX: viewport.width / 2,
-    centerY: TOP_MARGIN + maxHeight / 2,
+    centerY: top + maxHeight / 2,
     width: width * scale,
     height: height * scale,
     rotation: 0,
@@ -62,11 +67,13 @@ function box({ centerX, centerY, width, height, rotation }: PhotoPlacement): Box
 
 function LightboxFrame({
   photo,
+  label,
   placement,
   entrance,
   frameRef,
 }: {
   photo: BtsPhoto
+  label: string
   placement: PhotoPlacement
   entrance: PhotoPlacement | null
   frameRef: RefObject<HTMLDivElement | null>
@@ -89,13 +96,13 @@ function LightboxFrame({
   return (
     <div
       ref={frameRef}
-      className="fixed overflow-hidden border-[6px] border-white bg-white shadow-2xl shadow-black/70"
+      className="fixed overflow-hidden border-[6px] border-primary bg-primary shadow-2xl shadow-black/70"
       style={box(placement)}
     >
       <img src={photo.thumbnail.color.src} alt="" className="absolute inset-0 size-full object-cover" />
       <img
         src={photo.original.src}
-        alt="Behind the scenes photo"
+        alt={label}
         decoding="async"
         onLoad={() => setOriginalLoaded(true)}
         className={cn(
@@ -103,6 +110,16 @@ function LightboxFrame({
           originalLoaded ? "opacity-100" : "opacity-0",
         )}
       />
+      {!originalLoaded && (
+        // Delayed so cached originals don't flash the spinner.
+        <span
+          role="status"
+          aria-label="Loading full resolution photo"
+          className="absolute top-2 right-2 inline-flex size-8 items-center justify-center rounded-full bg-black/60 text-white animate-fade-in [animation-delay:300ms] [animation-fill-mode:backwards]"
+        >
+          <LoaderCircle aria-hidden className="size-5 animate-spin" />
+        </span>
+      )}
     </div>
   )
 }
@@ -171,13 +188,20 @@ export function PhotoLightbox({ photos, index, origin, onNavigate, onClose }: Ph
     "inline-flex size-12 cursor-pointer items-center justify-center rounded-full bg-black/60 text-white transition-colors hover:bg-black/80 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
 
   return (
-    <div role="dialog" aria-modal="true" aria-label="Behind the scenes photo viewer" className="fixed inset-0 z-60">
+    <div role="dialog" aria-modal="true" aria-label="Behind the scenes photo viewer" className="fixed inset-0 z-(--z-lightbox)">
       <div
         ref={backdropRef}
         onClick={close}
         className="absolute inset-0 bg-black/85 motion-safe:animate-fade-in"
       />
-      <LightboxFrame key={photo.id} photo={photo} placement={placement} entrance={entrance} frameRef={frameRef} />
+      <LightboxFrame
+        key={photo.id}
+        photo={photo}
+        label={`Behind-the-scenes photo ${index + 1} of ${photos.length}`}
+        placement={placement}
+        entrance={entrance}
+        frameRef={frameRef}
+      />
       <div className={cn("transition-opacity duration-200", closing && "opacity-0")}>
         <button
           ref={closeButtonRef}

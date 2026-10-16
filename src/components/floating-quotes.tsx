@@ -1,5 +1,5 @@
-import { useEffect, useMemo, useRef } from "react";
-import { quotes } from "@/lib/quotes";
+import { useEffect, useMemo, useRef } from "react"
+import { quotes } from "@/lib/quotes"
 
 type FloatingItem =
   | { kind: "quote"; text: string; author: string }
@@ -11,7 +11,7 @@ const HASHTAG = "#savetinyhatman"
 const HASHTAG_EVERY = 5
 const GAP = 150
 const EDGE_FADE = 140
-const HEADER_HEIGHT = 72
+const HEADER_HEIGHT = 64
 const HEADER_FADE = 280
 const MAX_OPACITY = 0.8
 const DRIFT_PX_PER_SECOND = 25
@@ -97,7 +97,7 @@ export function FloatingQuotes() {
   }, [sides])
 
   return (
-    <div aria-hidden="true" className="pointer-events-none fixed inset-0 -z-10 hidden overflow-hidden min-[1800px]:block">
+    <div aria-hidden="true" className="pointer-events-none fixed inset-0 z-(--z-backdrop) hidden overflow-hidden min-[1800px]:block">
       {(["left", "right"] as const).map((side) => (
         <div
           key={side}
@@ -114,12 +114,12 @@ export function FloatingQuotes() {
               {item.kind === "quote" ? (
                 <>
                   <blockquote className="text-base italic leading-snug text-muted-foreground">“{item.text}”</blockquote>
-                  <figcaption className="mt-2 text-sm uppercase tracking-widest text-muted-foreground/70">
-                    — {item.author}
+                  <figcaption className="mt-2 text-sm text-muted-foreground/80">
+                    {item.author}
                   </figcaption>
                 </>
               ) : (
-                <p className="text-2xl font-bold tracking-tight text-primary/70">{item.text}</p>
+                <p className="font-heading text-3xl tracking-wide text-accent/80">{item.text}</p>
               )}
             </figure>
           ))}

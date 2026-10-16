@@ -1,10 +1,24 @@
-import type { ReactNode } from "react";
+import type { ReactNode } from "react"
+import { cn } from "@/lib/utils"
 
-export function ExternalLink({ href, children, className }: { href: string; children: ReactNode; className?: string }) {
-    const classNames = "text-primary underline-offset-4 hover:underline " + className
-    return (
-        <a href={href} target="_blank" rel="noreferrer" className={classNames}>
-            {children}
-        </a>
-    )
+type ExternalLinkProps = {
+  href: string
+  children: ReactNode
+  className?: string
+}
+
+export function ExternalLink({ href, children, className }: ExternalLinkProps) {
+  return (
+    <a
+      href={href}
+      target="_blank"
+      rel="noreferrer"
+      className={cn(
+        "text-foreground underline decoration-muted-foreground/60 underline-offset-4 transition-colors hover:decoration-accent",
+        className,
+      )}
+    >
+      {children}
+    </a>
+  )
 }
