@@ -4,8 +4,24 @@ import { FloatingQuotes } from "@/components/floating-quotes"
 import { RotatingQuote } from "@/components/rotating-quote"
 import { films } from "@/lib/films"
 
+const firstFlippableSlug = films.find((film) => film.release.kind !== "upcoming")?.slug
+
+// Module-level so the hint stays dismissed when navigating back to the home page.
+let hintDismissed = false
+
 export function HomePage() {
   const [flippedSlug, setFlippedSlug] = useState<string | null>(null)
+  const [showHint, setShowHint] = useState(!hintDismissed)
+
+  const dismissHint = () => {
+    hintDismissed = true
+    setShowHint(false)
+  }
+
+  const flip = (slug: string) => {
+    dismissHint()
+    setFlippedSlug(slug)
+  }
 
   useEffect(() => {
     const unflipOutside = (event: PointerEvent) => {
@@ -32,8 +48,10 @@ export function HomePage() {
           <FilmCard
             key={film.slug}
             film={film}
+            hint={showHint && film.slug === firstFlippableSlug}
             flipped={flippedSlug === film.slug}
-            onFlip={() => setFlippedSlug(film.slug)}
+            onHover={dismissHint}
+            onFlip={() => flip(film.slug)}
             onUnflip={() => setFlippedSlug(null)}
           />
         ))}

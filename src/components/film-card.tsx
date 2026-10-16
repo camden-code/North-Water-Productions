@@ -1,7 +1,7 @@
 import { useRef, useState, type PointerEvent } from "react"
 import { flushSync } from "react-dom"
 import { Link } from "react-router"
-import { ArrowRight, Film as FilmIcon, Music, Play, X } from "lucide-react"
+import { ArrowRight, Film as FilmIcon, Music, Play, RotateCcw, X } from "lucide-react"
 import { ExternalLink } from "@/components/external-link"
 import { ProfileLinkIcon } from "@/components/profile-link-icon"
 import { formatRelease, posterTransitionName, type Film } from "@/lib/films"
@@ -9,7 +9,9 @@ import { cn } from "@/lib/utils"
 
 type FilmCardProps = {
   film: Film
+  hint: boolean
   flipped: boolean
+  onHover: () => void
   onFlip: () => void
   onUnflip: () => void
 }
@@ -62,7 +64,7 @@ function UpcomingFilm({ film, release }: { film: Film; release: string }) {
   )
 }
 
-export function FilmCard({ film, flipped, onFlip, onUnflip }: FilmCardProps) {
+export function FilmCard({ film, hint, flipped, onHover, onFlip, onUnflip }: FilmCardProps) {
   const release = formatRelease(film.release)
   const [tilt, setTilt] = useState<Tilt | null>(null)
   const [settling, setSettling] = useState(false)
@@ -93,6 +95,7 @@ export function FilmCard({ film, flipped, onFlip, onUnflip }: FilmCardProps) {
   return (
     <article
       data-film-card={film.slug}
+      onPointerEnter={onHover}
       onPointerMove={handlePointerMove}
       onPointerLeave={() => setTilt(null)}
       style={film.pagePath ? { viewTransitionName: posterTransitionName(film.slug) } : undefined}
@@ -128,18 +131,22 @@ export function FilmCard({ film, flipped, onFlip, onUnflip }: FilmCardProps) {
               <span>{release}</span>
             </div>
           )}
+          <span
+            aria-hidden="true"
+            className={cn(
+              "absolute top-3 right-3 inline-flex items-center gap-1.5 rounded-md bg-background/80 px-2.5 py-1 text-sm text-foreground backdrop-blur transition-opacity duration-300 motion-reduce:transition-none",
+              !hint && "opacity-0 group-hover:opacity-100 group-focus-visible:opacity-100",
+            )}
+          >
+            <RotateCcw aria-hidden className="size-3.5" />
+            Click for details
+          </span>
           {film.quote && (
             <figure className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/90 via-black/70 to-transparent px-4 pt-12 pb-4 text-left text-white">
               <blockquote className="text-lg leading-snug italic">“{film.quote.text}”</blockquote>
               <figcaption className="mt-1 text-sm text-white/70">{film.quote.author}</figcaption>
             </figure>
           )}
-          <span
-            aria-hidden="true"
-            className="absolute top-3 right-3 rounded-full bg-black/60 px-3 py-1 text-sm text-white backdrop-blur"
-          >
-            Details
-          </span>
           <span
             aria-hidden="true"
             className={cn(
